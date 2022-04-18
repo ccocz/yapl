@@ -1,0 +1,127 @@
+------------------------ programs ----------------------------
+
+entrypoints Program ;
+
+Program.   Program ::= [TopDef] ;
+
+FnDef.	   TopDef ::= Ident ":" Block ;
+
+ExpDef.    TopDef ::= Expr ;
+
+separator nonempty TopDef "" ;
+
+Glob.      TopDef ::= [Item] ";" ;
+
+------------------------ statements --------------------------
+
+-- Below rule might need fix for end of the block
+-- (like DEDENT token in Python grammar).
+Block.     Block ::= "\n\t" [Stmt] ;
+
+separator  Stmt "" ;
+
+Empty.     Stmt ::= ";" ;
+
+BStmt.     Stmt ::= Block ;
+
+Decl.      Stmt ::= [Item] ";" ;
+
+Init.      Item ::= Ident "=" Expr ;
+
+separator nonempty Item "," ;
+
+Ass.       Stmt ::= Ident "=" Expr  ";" ;
+
+Incr.      Stmt ::= Ident "++"  ";" ;
+
+Decr.      Stmt ::= Ident "--"  ";" ;
+
+Ret.       Stmt ::= "return" Expr ";" ;
+
+VRet.      Stmt ::= "return" ";" ;
+
+Cond.      Stmt ::= "if" "(" Expr "):" Stmt  ;
+
+CondElse.  Stmt ::= "if" "(" Expr "):" Stmt "else:" Stmt  ;
+
+While.     Stmt ::= "while" "(" Expr "):" Stmt ;
+
+ConstFor.  Stmt ::= "for" "(" Ident "=" Expr "to" Expr "):" Stmt;
+
+SExp.      Stmt ::= Expr  ";" ;
+
+------------------------- Types ------------------------------
+
+internal     Int.       Type ::= "int" ;
+
+internal     Str.       Type ::= "string" ;
+
+internal     Bool.      Type ::= "bool" ;
+
+internal     Void.      Type ::= "void" ;
+
+internal     FuncType.  Type ::= "fun" ;
+
+----------------------- Expressions --------------------------
+
+EVar.      Expr6 ::= Ident ;
+
+ELitInt.   Expr6 ::= Integer ;
+
+ELitTrue.  Expr6 ::= "true" ;
+
+ELitFalse. Expr6 ::= "false" ;
+
+EApp.      Expr6 ::= Ident "(" [Expr] ")" ;
+
+EString.   Expr6 ::= String ;
+
+EList.     Expr6 ::= "[" "]";
+
+Neg.       Expr5 ::= "-" Expr6 ;
+
+Not.       Expr5 ::= "!" Expr6 ;
+
+EMul.      Expr4 ::= Expr4 MulOp Expr5 ;
+
+EAdd.      Expr3 ::= Expr3 AddOp Expr4 ;
+
+ERel.      Expr2 ::= Expr2 RelOp Expr3 ;
+
+EAnd.      Expr1 ::= Expr2 "&&" Expr1 ;
+
+EOr.       Expr ::= Expr1 "||" Expr ;
+
+coercions  Expr 6 ;
+
+separator  Expr "," ;
+
+------------------------ operators ---------------------------
+
+Plus.      AddOp ::= "+" ;
+
+Minus.     AddOp ::= "-" ;
+
+Times.     MulOp ::= "*" ;
+
+Div.       MulOp ::= "/" ;
+
+Mod.       MulOp ::= "%" ;
+
+LTH.       RelOp ::= "<" ;
+
+LE.        RelOp ::= "<=" ;
+
+GTH.       RelOp ::= ">" ;
+
+GE.        RelOp ::= ">=" ;
+
+EQU.       RelOp ::= "==" ;
+
+NE.        RelOp ::= "!=" ;
+
+----------------------- comments ---------------------------
+
+comment    "#" ;
+
+comment    "/*" "*/" ;
