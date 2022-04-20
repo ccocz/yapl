@@ -146,8 +146,19 @@ instance Print AbsYAPL.Program where
 
 instance Print AbsYAPL.TopDef where
   prt i = \case
-    AbsYAPL.FnDef id_ block -> prPrec i 0 (concatD [prt 0 id_, doc (showString ":"), prt 0 block])
+    AbsYAPL.FnDefNoArg id_ block -> prPrec i 0 (concatD [prt 0 id_, doc (showString ":"), prt 0 block])
+    AbsYAPL.FnDefArg id_ args block -> prPrec i 0 (concatD [prt 0 id_, doc (showString "("), prt 0 args, doc (showString "):"), prt 0 block])
+    AbsYAPL.ExpDef expr -> prPrec i 0 (concatD [prt 0 expr])
     AbsYAPL.Glob items -> prPrec i 0 (concatD [prt 0 items, doc (showString ";")])
+
+instance Print AbsYAPL.Arg where
+  prt i = \case
+    AbsYAPL.Ar id_ -> prPrec i 0 (concatD [prt 0 id_])
+
+instance Print [AbsYAPL.Arg] where
+  prt _ [] = concatD []
+  prt _ [x] = concatD [prt 0 x]
+  prt _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
 instance Print [AbsYAPL.TopDef] where
   prt _ [] = concatD []
@@ -156,7 +167,7 @@ instance Print [AbsYAPL.TopDef] where
 
 instance Print AbsYAPL.Block where
   prt i = \case
-    AbsYAPL.Block stmts -> prPrec i 0 (concatD [prt 0 stmts])
+    AbsYAPL.Block stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
 
 instance Print [AbsYAPL.Stmt] where
   prt _ [] = concatD []
@@ -180,7 +191,7 @@ instance Print AbsYAPL.Stmt where
 
 instance Print AbsYAPL.Item where
   prt i = \case
-    AbsYAPL.Init id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr])
+    AbsYAPL.Init id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr, doc (showString ";")])
 
 instance Print [AbsYAPL.Item] where
   prt _ [] = concatD []

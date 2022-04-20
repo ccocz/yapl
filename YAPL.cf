@@ -1,22 +1,28 @@
 ------------------------ programs ----------------------------
 
+layout ":", "):" ;
+
 entrypoints Program ;
 
-Program.   Program ::= [TopDef] ;
+Program.        Program ::= [TopDef] ;
 
-FnDef.	   TopDef ::= Ident ":" Block ;
+FnDefNoArg.	    TopDef ::= Ident ":" Block ;
 
-ExpDef.    TopDef ::= Expr ;
+FnDefArg.       TopDef ::= Ident "(" [Arg] "):" Block ;
 
-separator nonempty TopDef "" ;
+Ar. 	        Arg ::= Ident;
 
-Glob.      TopDef ::= [Item] ";" ;
+separator       Arg "," ;
+
+ExpDef.         TopDef ::= Expr ;
+
+Glob.           TopDef ::= [Item] ";" ;
+
+separator       nonempty TopDef "" ;
 
 ------------------------ statements --------------------------
 
--- Below rule might need fix for end of the block
--- (like DEDENT token in Python grammar).
-Block.     Block ::= "\n\t" [Stmt] ;
+Block.     Block ::= "{" [Stmt] "}";
 
 separator  Stmt "" ;
 
@@ -26,7 +32,7 @@ BStmt.     Stmt ::= Block ;
 
 Decl.      Stmt ::= [Item] ";" ;
 
-Init.      Item ::= Ident "=" Expr ;
+Init.      Item ::= Ident "=" Expr ";" ;
 
 separator nonempty Item "," ;
 
@@ -46,7 +52,7 @@ CondElse.  Stmt ::= "if" "(" Expr "):" Stmt "else:" Stmt  ;
 
 While.     Stmt ::= "while" "(" Expr "):" Stmt ;
 
-ConstFor.  Stmt ::= "for" "(" Ident "=" Expr "to" Expr "):" Stmt;
+ConstFor.  Stmt ::= "for" "(" Ident "=" Expr ";" "to" Expr "):" Stmt;
 
 SExp.      Stmt ::= Expr  ";" ;
 

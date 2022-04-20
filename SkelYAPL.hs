@@ -25,9 +25,14 @@ transProgram x = case x of
 
 transTopDef :: AbsYAPL.TopDef -> Result
 transTopDef x = case x of
-  AbsYAPL.FnDef ident block -> failure x
+  AbsYAPL.FnDefNoArg ident block -> failure x
+  AbsYAPL.FnDefArg ident args block -> failure x
   AbsYAPL.ExpDef expr -> failure x
   AbsYAPL.Glob items -> failure x
+
+transArg :: AbsYAPL.Arg -> Result
+transArg x = case x of
+  AbsYAPL.Ar ident -> failure x
 
 transBlock :: AbsYAPL.Block -> Result
 transBlock x = case x of

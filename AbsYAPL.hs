@@ -13,7 +13,14 @@ import qualified Data.String
 data Program = Program [TopDef]
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data TopDef = FnDef Ident Block | ExpDef Expr | Glob [Item]
+data TopDef
+    = FnDefNoArg Ident Block
+    | FnDefArg Ident [Arg] Block
+    | ExpDef Expr
+    | Glob [Item]
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+data Arg = Ar Ident
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Block = Block [Stmt]

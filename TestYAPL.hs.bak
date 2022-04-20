@@ -6,7 +6,6 @@ module Main where
 
 import Prelude
   ( ($), (.)
-  , Bool(..)
   , Either(..)
   , Int, (>)
   , String, (++), concat, unlines
@@ -19,12 +18,11 @@ import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when )
 
-import AbsYAPL    ()
-import LayoutYAPL ( resolveLayout )
-import LexYAPL    ( Token, mkPosToken )
-import ParYAPL    ( pProgram, myLexer )
-import PrintYAPL  ( Print, printTree )
-import SkelYAPL   ()
+import AbsYAPL   ()
+import LexYAPL   ( Token, mkPosToken )
+import ParYAPL   ( pProgram, myLexer )
+import PrintYAPL ( Print, printTree )
+import SkelYAPL  ()
 
 type Err        = Either String
 type ParseFun a = [Token] -> Err a
@@ -49,7 +47,7 @@ run v p s =
       putStrLn "\nParse Successful!"
       showTree v tree
   where
-  ts = resolveLayout False $ myLexer s
+  ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
 
 showTree :: (Show a, Print a) => Int -> a -> IO ()

@@ -55,7 +55,9 @@ import LexYAPL
   'to'     { PT _ (TS _ 30) }
   'true'   { PT _ (TS _ 31) }
   'while'  { PT _ (TS _ 32) }
-  '||'     { PT _ (TS _ 33) }
+  '{'      { PT _ (TS _ 33) }
+  '||'     { PT _ (TS _ 34) }
+  '}'      { PT _ (TS _ 35) }
   L_Ident  { PT _ (TV $$)   }
   L_integ  { PT _ (TI $$)   }
   L_quoted { PT _ (TL $$)   }
@@ -76,15 +78,25 @@ Program : ListTopDef { AbsYAPL.Program $1 }
 
 TopDef :: { AbsYAPL.TopDef }
 TopDef
-  : Ident ':' Block { AbsYAPL.FnDef $1 $3 }
+  : Ident ':' Block { AbsYAPL.FnDefNoArg $1 $3 }
+  | Ident '(' ListArg '):' Block { AbsYAPL.FnDefArg $1 $3 $5 }
   | Expr { AbsYAPL.ExpDef $1 }
   | ListItem ';' { AbsYAPL.Glob $1 }
+
+Arg :: { AbsYAPL.Arg }
+Arg : Ident { AbsYAPL.Ar $1 }
+
+ListArg :: { [AbsYAPL.Arg] }
+ListArg
+  : {- empty -} { [] }
+  | Arg { (:[]) $1 }
+  | Arg ',' ListArg { (:) $1 $3 }
 
 ListTopDef :: { [AbsYAPL.TopDef] }
 ListTopDef : TopDef { (:[]) $1 } | TopDef ListTopDef { (:) $1 $2 }
 
 Block :: { AbsYAPL.Block }
-Block : ListStmt { AbsYAPL.Block $1 }
+Block : '{' ListStmt '}' { AbsYAPL.Block $2 }
 
 ListStmt :: { [AbsYAPL.Stmt] }
 ListStmt : {- empty -} { [] } | Stmt ListStmt { (:) $1 $2 }
@@ -102,11 +114,11 @@ Stmt
   | 'if' '(' Expr '):' Stmt { AbsYAPL.Cond $3 $5 }
   | 'if' '(' Expr '):' Stmt 'else:' Stmt { AbsYAPL.CondElse $3 $5 $7 }
   | 'while' '(' Expr '):' Stmt { AbsYAPL.While $3 $5 }
-  | 'for' '(' Ident '=' Expr 'to' Expr '):' Stmt { AbsYAPL.ConstFor $3 $5 $7 $9 }
+  | 'for' '(' Ident '=' Expr ';' 'to' Expr '):' Stmt { AbsYAPL.ConstFor $3 $5 $8 $10 }
   | Expr ';' { AbsYAPL.SExp $1 }
 
 Item :: { AbsYAPL.Item }
-Item : Ident '=' Expr { AbsYAPL.Init $1 $3 }
+Item : Ident '=' Expr ';' { AbsYAPL.Init $1 $3 }
 
 ListItem :: { [AbsYAPL.Item] }
 ListItem : Item { (:[]) $1 } | Item ',' ListItem { (:) $1 $3 }

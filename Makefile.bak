@@ -18,7 +18,7 @@ all : TestYAPL
 
 # Rules for building the parser.
 
-AbsYAPL.hs LayoutYAPL.hs LexYAPL.x ParYAPL.y PrintYAPL.hs TestYAPL.hs : YAPL.cf
+AbsYAPL.hs LexYAPL.x ParYAPL.y PrintYAPL.hs TestYAPL.hs : YAPL.cf
 	bnfc --haskell YAPL.cf
 
 %.hs : %.y
@@ -27,7 +27,7 @@ AbsYAPL.hs LayoutYAPL.hs LexYAPL.x ParYAPL.y PrintYAPL.hs TestYAPL.hs : YAPL.cf
 %.hs : %.x
 	${ALEX} ${ALEX_OPTS} $<
 
-TestYAPL : AbsYAPL.hs LayoutYAPL.hs LexYAPL.hs ParYAPL.hs PrintYAPL.hs TestYAPL.hs
+TestYAPL : AbsYAPL.hs LexYAPL.hs ParYAPL.hs PrintYAPL.hs TestYAPL.hs
 	${GHC} ${GHC_OPTS} $@
 
 # Rules for cleaning generated files.
