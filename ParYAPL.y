@@ -8,7 +8,7 @@
 module ParYAPL
   ( happyError
   , myLexer
-  , pProgram
+  , pExpr
   ) where
 
 import Prelude
@@ -18,7 +18,7 @@ import LexYAPL
 
 }
 
-%name pProgram Program
+%name pExpr_internal Expr
 -- no lexer declaration
 %monad { Err } { (>>=) } { return }
 %tokentype {Token}
@@ -58,124 +58,149 @@ import LexYAPL
   '{'      { PT _ (TS _ 33) }
   '||'     { PT _ (TS _ 34) }
   '}'      { PT _ (TS _ 35) }
-  L_Ident  { PT _ (TV $$)   }
-  L_integ  { PT _ (TI $$)   }
-  L_quoted { PT _ (TL $$)   }
+  L_Ident  { PT _ (TV _)    }
+  L_integ  { PT _ (TI _)    }
+  L_quoted { PT _ (TL _)    }
 
 %%
 
-Ident :: { AbsYAPL.Ident }
-Ident  : L_Ident { AbsYAPL.Ident $1 }
+Ident :: { (AbsYAPL.BNFC'Position, AbsYAPL.Ident) }
+Ident  : L_Ident { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Ident (tokenText $1)) }
 
-Integer :: { Integer }
-Integer  : L_integ  { (read $1) :: Integer }
+Integer :: { (AbsYAPL.BNFC'Position, Integer) }
+Integer  : L_integ  { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), (read (tokenText $1)) :: Integer) }
 
-String  :: { String }
-String   : L_quoted { $1 }
+String  :: { (AbsYAPL.BNFC'Position, String) }
+String   : L_quoted { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), ((\(PT _ (TL s)) -> s) $1)) }
 
-Program :: { AbsYAPL.Program }
-Program : ListTopDef { AbsYAPL.Program $1 }
+Program :: { (AbsYAPL.BNFC'Position, AbsYAPL.Program) }
+Program
+  : ListTopDef { (fst $1, AbsYAPL.Program (fst $1) (snd $1)) }
 
-TopDef :: { AbsYAPL.TopDef }
+TopDef :: { (AbsYAPL.BNFC'Position, AbsYAPL.TopDef) }
 TopDef
-  : Ident ':' Block { AbsYAPL.FnDefNoArg $1 $3 }
-  | Ident '(' ListArg '):' Block { AbsYAPL.FnDefArg $1 $3 $5 }
-  | Expr { AbsYAPL.ExpDef $1 }
-  | ListItem ';' { AbsYAPL.Glob $1 }
+  : Ident ':' Block { (fst $1, AbsYAPL.FnDefNoArg (fst $1) (snd $1) (snd $3)) }
+  | Ident '(' ListArg '):' Block { (fst $1, AbsYAPL.FnDefArg (fst $1) (snd $1) (snd $3) (snd $5)) }
+  | Expr { (fst $1, AbsYAPL.ExpDef (fst $1) (snd $1)) }
+  | ListItem ';' { (fst $1, AbsYAPL.Glob (fst $1) (snd $1)) }
+  | Stmt { (fst $1, AbsYAPL.Stm (fst $1) (snd $1)) }
+  | Expr { (fst $1, AbsYAPL.Exp (fst $1) (snd $1)) }
 
-Arg :: { AbsYAPL.Arg }
-Arg : Ident { AbsYAPL.Ar $1 }
+Arg :: { (AbsYAPL.BNFC'Position, AbsYAPL.Arg) }
+Arg : Ident { (fst $1, AbsYAPL.Ar (fst $1) (snd $1)) }
 
-ListArg :: { [AbsYAPL.Arg] }
+ListArg :: { (AbsYAPL.BNFC'Position, [AbsYAPL.Arg]) }
 ListArg
-  : {- empty -} { [] }
-  | Arg { (:[]) $1 }
-  | Arg ',' ListArg { (:) $1 $3 }
+  : {- empty -} { (AbsYAPL.BNFC'NoPosition, []) }
+  | Arg { (fst $1, (:[]) (snd $1)) }
+  | Arg ',' ListArg { (fst $1, (:) (snd $1) (snd $3)) }
 
-ListTopDef :: { [AbsYAPL.TopDef] }
-ListTopDef : TopDef { (:[]) $1 } | TopDef ListTopDef { (:) $1 $2 }
+ListTopDef :: { (AbsYAPL.BNFC'Position, [AbsYAPL.TopDef]) }
+ListTopDef
+  : TopDef { (fst $1, (:[]) (snd $1)) }
+  | TopDef ListTopDef { (fst $1, (:) (snd $1) (snd $2)) }
 
-Block :: { AbsYAPL.Block }
-Block : '{' ListStmt '}' { AbsYAPL.Block $2 }
+Block :: { (AbsYAPL.BNFC'Position, AbsYAPL.Block) }
+Block
+  : '{' ListStmt '}' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Block (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $2)) }
 
-ListStmt :: { [AbsYAPL.Stmt] }
-ListStmt : {- empty -} { [] } | Stmt ListStmt { (:) $1 $2 }
+ListStmt :: { (AbsYAPL.BNFC'Position, [AbsYAPL.Stmt]) }
+ListStmt
+  : {- empty -} { (AbsYAPL.BNFC'NoPosition, []) }
+  | Stmt ListStmt { (fst $1, (:) (snd $1) (snd $2)) }
 
-Stmt :: { AbsYAPL.Stmt }
+Stmt :: { (AbsYAPL.BNFC'Position, AbsYAPL.Stmt) }
 Stmt
-  : ';' { AbsYAPL.Empty }
-  | Block { AbsYAPL.BStmt $1 }
-  | ListItem ';' { AbsYAPL.Decl $1 }
-  | Ident '=' Expr ';' { AbsYAPL.Ass $1 $3 }
-  | Ident '++' ';' { AbsYAPL.Incr $1 }
-  | Ident '--' ';' { AbsYAPL.Decr $1 }
-  | 'return' Expr ';' { AbsYAPL.Ret $2 }
-  | 'return' ';' { AbsYAPL.VRet }
-  | 'if' '(' Expr '):' Stmt { AbsYAPL.Cond $3 $5 }
-  | 'if' '(' Expr '):' Stmt 'else:' Stmt { AbsYAPL.CondElse $3 $5 $7 }
-  | 'while' '(' Expr '):' Stmt { AbsYAPL.While $3 $5 }
-  | 'for' '(' Ident '=' Expr ';' 'to' Expr '):' Stmt { AbsYAPL.ConstFor $3 $5 $8 $10 }
-  | Expr ';' { AbsYAPL.SExp $1 }
+  : ';' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Empty (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | Block { (fst $1, AbsYAPL.BStmt (fst $1) (snd $1)) }
+  | ListItem ';' { (fst $1, AbsYAPL.Decl (fst $1) (snd $1)) }
+  | Ident '=' Expr ';' { (fst $1, AbsYAPL.Ass (fst $1) (snd $1) (snd $3)) }
+  | Ident '++' ';' { (fst $1, AbsYAPL.Incr (fst $1) (snd $1)) }
+  | Ident '--' ';' { (fst $1, AbsYAPL.Decr (fst $1) (snd $1)) }
+  | 'return' Expr ';' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Ret (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $2)) }
+  | 'return' ';' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.VRet (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | 'if' '(' Expr '):' Stmt { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Cond (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
+  | 'if' '(' Expr '):' Stmt 'else:' Stmt { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.CondElse (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $7)) }
+  | 'while' '(' Expr '):' Stmt { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.While (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
+  | 'for' '(' Ident '=' Expr ';' 'to' Expr '):' Stmt { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.ConstFor (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $8) (snd $10)) }
+  | Expr ';' { (fst $1, AbsYAPL.SExp (fst $1) (snd $1)) }
 
-Item :: { AbsYAPL.Item }
-Item : Ident '=' Expr ';' { AbsYAPL.Init $1 $3 }
+Item :: { (AbsYAPL.BNFC'Position, AbsYAPL.Item) }
+Item
+  : Ident '=' Expr ';' { (fst $1, AbsYAPL.Init (fst $1) (snd $1) (snd $3)) }
 
-ListItem :: { [AbsYAPL.Item] }
-ListItem : Item { (:[]) $1 } | Item ',' ListItem { (:) $1 $3 }
+ListItem :: { (AbsYAPL.BNFC'Position, [AbsYAPL.Item]) }
+ListItem
+  : Item { (fst $1, (:[]) (snd $1)) }
+  | Item ',' ListItem { (fst $1, (:) (snd $1) (snd $3)) }
 
-Expr6 :: { AbsYAPL.Expr }
+Expr6 :: { (AbsYAPL.BNFC'Position, AbsYAPL.Expr) }
 Expr6
-  : Ident { AbsYAPL.EVar $1 }
-  | Integer { AbsYAPL.ELitInt $1 }
-  | 'true' { AbsYAPL.ELitTrue }
-  | 'false' { AbsYAPL.ELitFalse }
-  | Ident '(' ListExpr ')' { AbsYAPL.EApp $1 $3 }
-  | String { AbsYAPL.EString $1 }
-  | '[' ']' { AbsYAPL.EList }
-  | '(' Expr ')' { $2 }
+  : Ident { (fst $1, AbsYAPL.EVar (fst $1) (snd $1)) }
+  | Integer { (fst $1, AbsYAPL.ELitInt (fst $1) (snd $1)) }
+  | 'true' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.ELitTrue (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | 'false' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.ELitFalse (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | Ident '(' ListExpr ')' { (fst $1, AbsYAPL.EApp (fst $1) (snd $1) (snd $3)) }
+  | String { (fst $1, AbsYAPL.EString (fst $1) (snd $1)) }
+  | '[' ']' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.EList (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '(' Expr ')' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), (snd $2)) }
 
-Expr5 :: { AbsYAPL.Expr }
+Expr5 :: { (AbsYAPL.BNFC'Position, AbsYAPL.Expr) }
 Expr5
-  : '-' Expr6 { AbsYAPL.Neg $2 }
-  | '!' Expr6 { AbsYAPL.Not $2 }
-  | Expr6 { $1 }
+  : '-' Expr6 { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Neg (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $2)) }
+  | '!' Expr6 { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Not (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $2)) }
+  | Expr6 { (fst $1, (snd $1)) }
 
-Expr4 :: { AbsYAPL.Expr }
-Expr4 : Expr4 MulOp Expr5 { AbsYAPL.EMul $1 $2 $3 } | Expr5 { $1 }
+Expr4 :: { (AbsYAPL.BNFC'Position, AbsYAPL.Expr) }
+Expr4
+  : Expr4 MulOp Expr5 { (fst $1, AbsYAPL.EMul (fst $1) (snd $1) (snd $2) (snd $3)) }
+  | Expr5 { (fst $1, (snd $1)) }
 
-Expr3 :: { AbsYAPL.Expr }
-Expr3 : Expr3 AddOp Expr4 { AbsYAPL.EAdd $1 $2 $3 } | Expr4 { $1 }
+Expr3 :: { (AbsYAPL.BNFC'Position, AbsYAPL.Expr) }
+Expr3
+  : Expr3 AddOp Expr4 { (fst $1, AbsYAPL.EAdd (fst $1) (snd $1) (snd $2) (snd $3)) }
+  | Expr4 { (fst $1, (snd $1)) }
 
-Expr2 :: { AbsYAPL.Expr }
-Expr2 : Expr2 RelOp Expr3 { AbsYAPL.ERel $1 $2 $3 } | Expr3 { $1 }
+Expr2 :: { (AbsYAPL.BNFC'Position, AbsYAPL.Expr) }
+Expr2
+  : Expr2 RelOp Expr3 { (fst $1, AbsYAPL.ERel (fst $1) (snd $1) (snd $2) (snd $3)) }
+  | Expr3 { (fst $1, (snd $1)) }
 
-Expr1 :: { AbsYAPL.Expr }
-Expr1 : Expr2 '&&' Expr1 { AbsYAPL.EAnd $1 $3 } | Expr2 { $1 }
+Expr1 :: { (AbsYAPL.BNFC'Position, AbsYAPL.Expr) }
+Expr1
+  : Expr2 '&&' Expr1 { (fst $1, AbsYAPL.EAnd (fst $1) (snd $1) (snd $3)) }
+  | Expr2 { (fst $1, (snd $1)) }
 
-Expr :: { AbsYAPL.Expr }
-Expr : Expr1 '||' Expr { AbsYAPL.EOr $1 $3 } | Expr1 { $1 }
+Expr :: { (AbsYAPL.BNFC'Position, AbsYAPL.Expr) }
+Expr
+  : Expr1 '||' Expr { (fst $1, AbsYAPL.EOr (fst $1) (snd $1) (snd $3)) }
+  | Expr1 { (fst $1, (snd $1)) }
 
-ListExpr :: { [AbsYAPL.Expr] }
+ListExpr :: { (AbsYAPL.BNFC'Position, [AbsYAPL.Expr]) }
 ListExpr
-  : {- empty -} { [] }
-  | Expr { (:[]) $1 }
-  | Expr ',' ListExpr { (:) $1 $3 }
+  : {- empty -} { (AbsYAPL.BNFC'NoPosition, []) }
+  | Expr { (fst $1, (:[]) (snd $1)) }
+  | Expr ',' ListExpr { (fst $1, (:) (snd $1) (snd $3)) }
 
-AddOp :: { AbsYAPL.AddOp }
-AddOp : '+' { AbsYAPL.Plus } | '-' { AbsYAPL.Minus }
+AddOp :: { (AbsYAPL.BNFC'Position, AbsYAPL.AddOp) }
+AddOp
+  : '+' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Plus (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '-' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Minus (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
 
-MulOp :: { AbsYAPL.MulOp }
+MulOp :: { (AbsYAPL.BNFC'Position, AbsYAPL.MulOp) }
 MulOp
-  : '*' { AbsYAPL.Times } | '/' { AbsYAPL.Div } | '%' { AbsYAPL.Mod }
+  : '*' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Times (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '/' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Div (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '%' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Mod (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
 
-RelOp :: { AbsYAPL.RelOp }
+RelOp :: { (AbsYAPL.BNFC'Position, AbsYAPL.RelOp) }
 RelOp
-  : '<' { AbsYAPL.LTH }
-  | '<=' { AbsYAPL.LE }
-  | '>' { AbsYAPL.GTH }
-  | '>=' { AbsYAPL.GE }
-  | '==' { AbsYAPL.EQU }
-  | '!=' { AbsYAPL.NE }
+  : '<' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.LTH (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '<=' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.LE (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '>' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.GTH (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '>=' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.GE (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '==' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.EQU (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
+  | '!=' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.NE (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
 
 {
 
@@ -192,5 +217,9 @@ happyError ts = Left $
 myLexer :: String -> [Token]
 myLexer = tokens
 
+-- Entrypoints
+
+pExpr :: [Token] -> Err AbsYAPL.Expr
+pExpr = fmap snd . pExpr_internal
 }
 

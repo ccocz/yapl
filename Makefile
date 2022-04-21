@@ -19,7 +19,7 @@ all : TestYAPL
 # Rules for building the parser.
 
 AbsYAPL.hs LayoutYAPL.hs LexYAPL.x ParYAPL.y PrintYAPL.hs TestYAPL.hs : YAPL.cf
-	bnfc --haskell YAPL.cf
+	bnfc --haskell --functor YAPL.cf
 
 %.hs : %.y
 	${HAPPY} ${HAPPY_OPTS} $<

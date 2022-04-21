@@ -140,110 +140,112 @@ instance Print Double where
 
 instance Print AbsYAPL.Ident where
   prt _ (AbsYAPL.Ident i) = doc $ showString i
-instance Print AbsYAPL.Program where
+instance Print (AbsYAPL.Program' a) where
   prt i = \case
-    AbsYAPL.Program topdefs -> prPrec i 0 (concatD [prt 0 topdefs])
+    AbsYAPL.Program _ topdefs -> prPrec i 0 (concatD [prt 0 topdefs])
 
-instance Print AbsYAPL.TopDef where
+instance Print (AbsYAPL.TopDef' a) where
   prt i = \case
-    AbsYAPL.FnDefNoArg id_ block -> prPrec i 0 (concatD [prt 0 id_, doc (showString ":"), prt 0 block])
-    AbsYAPL.FnDefArg id_ args block -> prPrec i 0 (concatD [prt 0 id_, doc (showString "("), prt 0 args, doc (showString "):"), prt 0 block])
-    AbsYAPL.ExpDef expr -> prPrec i 0 (concatD [prt 0 expr])
-    AbsYAPL.Glob items -> prPrec i 0 (concatD [prt 0 items, doc (showString ";")])
+    AbsYAPL.FnDefNoArg _ id_ block -> prPrec i 0 (concatD [prt 0 id_, doc (showString ":"), prt 0 block])
+    AbsYAPL.FnDefArg _ id_ args block -> prPrec i 0 (concatD [prt 0 id_, doc (showString "("), prt 0 args, doc (showString "):"), prt 0 block])
+    AbsYAPL.ExpDef _ expr -> prPrec i 0 (concatD [prt 0 expr])
+    AbsYAPL.Glob _ items -> prPrec i 0 (concatD [prt 0 items, doc (showString ";")])
+    AbsYAPL.Stm _ stmt -> prPrec i 0 (concatD [prt 0 stmt])
+    AbsYAPL.Exp _ expr -> prPrec i 0 (concatD [prt 0 expr])
 
-instance Print AbsYAPL.Arg where
+instance Print (AbsYAPL.Arg' a) where
   prt i = \case
-    AbsYAPL.Ar id_ -> prPrec i 0 (concatD [prt 0 id_])
+    AbsYAPL.Ar _ id_ -> prPrec i 0 (concatD [prt 0 id_])
 
-instance Print [AbsYAPL.Arg] where
+instance Print [AbsYAPL.Arg' a] where
   prt _ [] = concatD []
   prt _ [x] = concatD [prt 0 x]
   prt _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
-instance Print [AbsYAPL.TopDef] where
+instance Print [AbsYAPL.TopDef' a] where
   prt _ [] = concatD []
   prt _ [x] = concatD [prt 0 x]
   prt _ (x:xs) = concatD [prt 0 x, prt 0 xs]
 
-instance Print AbsYAPL.Block where
+instance Print (AbsYAPL.Block' a) where
   prt i = \case
-    AbsYAPL.Block stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
+    AbsYAPL.Block _ stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
 
-instance Print [AbsYAPL.Stmt] where
+instance Print [AbsYAPL.Stmt' a] where
   prt _ [] = concatD []
   prt _ (x:xs) = concatD [prt 0 x, prt 0 xs]
 
-instance Print AbsYAPL.Stmt where
+instance Print (AbsYAPL.Stmt' a) where
   prt i = \case
-    AbsYAPL.Empty -> prPrec i 0 (concatD [doc (showString ";")])
-    AbsYAPL.BStmt block -> prPrec i 0 (concatD [prt 0 block])
-    AbsYAPL.Decl items -> prPrec i 0 (concatD [prt 0 items, doc (showString ";")])
-    AbsYAPL.Ass id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr, doc (showString ";")])
-    AbsYAPL.Incr id_ -> prPrec i 0 (concatD [prt 0 id_, doc (showString "++"), doc (showString ";")])
-    AbsYAPL.Decr id_ -> prPrec i 0 (concatD [prt 0 id_, doc (showString "--"), doc (showString ";")])
-    AbsYAPL.Ret expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr, doc (showString ";")])
-    AbsYAPL.VRet -> prPrec i 0 (concatD [doc (showString "return"), doc (showString ";")])
-    AbsYAPL.Cond expr stmt -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt])
-    AbsYAPL.CondElse expr stmt1 stmt2 -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt1, doc (showString "else:"), prt 0 stmt2])
-    AbsYAPL.While expr stmt -> prPrec i 0 (concatD [doc (showString "while"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt])
-    AbsYAPL.ConstFor id_ expr1 expr2 stmt -> prPrec i 0 (concatD [doc (showString "for"), doc (showString "("), prt 0 id_, doc (showString "="), prt 0 expr1, doc (showString ";"), doc (showString "to"), prt 0 expr2, doc (showString "):"), prt 0 stmt])
-    AbsYAPL.SExp expr -> prPrec i 0 (concatD [prt 0 expr, doc (showString ";")])
+    AbsYAPL.Empty _ -> prPrec i 0 (concatD [doc (showString ";")])
+    AbsYAPL.BStmt _ block -> prPrec i 0 (concatD [prt 0 block])
+    AbsYAPL.Decl _ items -> prPrec i 0 (concatD [prt 0 items, doc (showString ";")])
+    AbsYAPL.Ass _ id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr, doc (showString ";")])
+    AbsYAPL.Incr _ id_ -> prPrec i 0 (concatD [prt 0 id_, doc (showString "++"), doc (showString ";")])
+    AbsYAPL.Decr _ id_ -> prPrec i 0 (concatD [prt 0 id_, doc (showString "--"), doc (showString ";")])
+    AbsYAPL.Ret _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr, doc (showString ";")])
+    AbsYAPL.VRet _ -> prPrec i 0 (concatD [doc (showString "return"), doc (showString ";")])
+    AbsYAPL.Cond _ expr stmt -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt])
+    AbsYAPL.CondElse _ expr stmt1 stmt2 -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt1, doc (showString "else:"), prt 0 stmt2])
+    AbsYAPL.While _ expr stmt -> prPrec i 0 (concatD [doc (showString "while"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt])
+    AbsYAPL.ConstFor _ id_ expr1 expr2 stmt -> prPrec i 0 (concatD [doc (showString "for"), doc (showString "("), prt 0 id_, doc (showString "="), prt 0 expr1, doc (showString ";"), doc (showString "to"), prt 0 expr2, doc (showString "):"), prt 0 stmt])
+    AbsYAPL.SExp _ expr -> prPrec i 0 (concatD [prt 0 expr, doc (showString ";")])
 
-instance Print AbsYAPL.Item where
+instance Print (AbsYAPL.Item' a) where
   prt i = \case
-    AbsYAPL.Init id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr, doc (showString ";")])
+    AbsYAPL.Init _ id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr, doc (showString ";")])
 
-instance Print [AbsYAPL.Item] where
+instance Print [AbsYAPL.Item' a] where
   prt _ [] = concatD []
   prt _ [x] = concatD [prt 0 x]
   prt _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
-instance Print AbsYAPL.Type where
+instance Print (AbsYAPL.Type' a) where
   prt i = \case
-    AbsYAPL.Int -> prPrec i 0 (concatD [doc (showString "int")])
-    AbsYAPL.Str -> prPrec i 0 (concatD [doc (showString "string")])
-    AbsYAPL.Bool -> prPrec i 0 (concatD [doc (showString "bool")])
-    AbsYAPL.Void -> prPrec i 0 (concatD [doc (showString "void")])
-    AbsYAPL.FuncType -> prPrec i 0 (concatD [doc (showString "fun")])
+    AbsYAPL.Int _ -> prPrec i 0 (concatD [doc (showString "int")])
+    AbsYAPL.Str _ -> prPrec i 0 (concatD [doc (showString "string")])
+    AbsYAPL.Bool _ -> prPrec i 0 (concatD [doc (showString "bool")])
+    AbsYAPL.Void _ -> prPrec i 0 (concatD [doc (showString "void")])
+    AbsYAPL.FuncType _ -> prPrec i 0 (concatD [doc (showString "fun")])
 
-instance Print AbsYAPL.Expr where
+instance Print (AbsYAPL.Expr' a) where
   prt i = \case
-    AbsYAPL.EVar id_ -> prPrec i 6 (concatD [prt 0 id_])
-    AbsYAPL.ELitInt n -> prPrec i 6 (concatD [prt 0 n])
-    AbsYAPL.ELitTrue -> prPrec i 6 (concatD [doc (showString "true")])
-    AbsYAPL.ELitFalse -> prPrec i 6 (concatD [doc (showString "false")])
-    AbsYAPL.EApp id_ exprs -> prPrec i 6 (concatD [prt 0 id_, doc (showString "("), prt 0 exprs, doc (showString ")")])
-    AbsYAPL.EString str -> prPrec i 6 (concatD [printString str])
-    AbsYAPL.EList -> prPrec i 6 (concatD [doc (showString "["), doc (showString "]")])
-    AbsYAPL.Neg expr -> prPrec i 5 (concatD [doc (showString "-"), prt 6 expr])
-    AbsYAPL.Not expr -> prPrec i 5 (concatD [doc (showString "!"), prt 6 expr])
-    AbsYAPL.EMul expr1 mulop expr2 -> prPrec i 4 (concatD [prt 4 expr1, prt 0 mulop, prt 5 expr2])
-    AbsYAPL.EAdd expr1 addop expr2 -> prPrec i 3 (concatD [prt 3 expr1, prt 0 addop, prt 4 expr2])
-    AbsYAPL.ERel expr1 relop expr2 -> prPrec i 2 (concatD [prt 2 expr1, prt 0 relop, prt 3 expr2])
-    AbsYAPL.EAnd expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "&&"), prt 1 expr2])
-    AbsYAPL.EOr expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "||"), prt 0 expr2])
+    AbsYAPL.EVar _ id_ -> prPrec i 6 (concatD [prt 0 id_])
+    AbsYAPL.ELitInt _ n -> prPrec i 6 (concatD [prt 0 n])
+    AbsYAPL.ELitTrue _ -> prPrec i 6 (concatD [doc (showString "true")])
+    AbsYAPL.ELitFalse _ -> prPrec i 6 (concatD [doc (showString "false")])
+    AbsYAPL.EApp _ id_ exprs -> prPrec i 6 (concatD [prt 0 id_, doc (showString "("), prt 0 exprs, doc (showString ")")])
+    AbsYAPL.EString _ str -> prPrec i 6 (concatD [printString str])
+    AbsYAPL.EList _ -> prPrec i 6 (concatD [doc (showString "["), doc (showString "]")])
+    AbsYAPL.Neg _ expr -> prPrec i 5 (concatD [doc (showString "-"), prt 6 expr])
+    AbsYAPL.Not _ expr -> prPrec i 5 (concatD [doc (showString "!"), prt 6 expr])
+    AbsYAPL.EMul _ expr1 mulop expr2 -> prPrec i 4 (concatD [prt 4 expr1, prt 0 mulop, prt 5 expr2])
+    AbsYAPL.EAdd _ expr1 addop expr2 -> prPrec i 3 (concatD [prt 3 expr1, prt 0 addop, prt 4 expr2])
+    AbsYAPL.ERel _ expr1 relop expr2 -> prPrec i 2 (concatD [prt 2 expr1, prt 0 relop, prt 3 expr2])
+    AbsYAPL.EAnd _ expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "&&"), prt 1 expr2])
+    AbsYAPL.EOr _ expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "||"), prt 0 expr2])
 
-instance Print [AbsYAPL.Expr] where
+instance Print [AbsYAPL.Expr' a] where
   prt _ [] = concatD []
   prt _ [x] = concatD [prt 0 x]
   prt _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
-instance Print AbsYAPL.AddOp where
+instance Print (AbsYAPL.AddOp' a) where
   prt i = \case
-    AbsYAPL.Plus -> prPrec i 0 (concatD [doc (showString "+")])
-    AbsYAPL.Minus -> prPrec i 0 (concatD [doc (showString "-")])
+    AbsYAPL.Plus _ -> prPrec i 0 (concatD [doc (showString "+")])
+    AbsYAPL.Minus _ -> prPrec i 0 (concatD [doc (showString "-")])
 
-instance Print AbsYAPL.MulOp where
+instance Print (AbsYAPL.MulOp' a) where
   prt i = \case
-    AbsYAPL.Times -> prPrec i 0 (concatD [doc (showString "*")])
-    AbsYAPL.Div -> prPrec i 0 (concatD [doc (showString "/")])
-    AbsYAPL.Mod -> prPrec i 0 (concatD [doc (showString "%")])
+    AbsYAPL.Times _ -> prPrec i 0 (concatD [doc (showString "*")])
+    AbsYAPL.Div _ -> prPrec i 0 (concatD [doc (showString "/")])
+    AbsYAPL.Mod _ -> prPrec i 0 (concatD [doc (showString "%")])
 
-instance Print AbsYAPL.RelOp where
+instance Print (AbsYAPL.RelOp' a) where
   prt i = \case
-    AbsYAPL.LTH -> prPrec i 0 (concatD [doc (showString "<")])
-    AbsYAPL.LE -> prPrec i 0 (concatD [doc (showString "<=")])
-    AbsYAPL.GTH -> prPrec i 0 (concatD [doc (showString ">")])
-    AbsYAPL.GE -> prPrec i 0 (concatD [doc (showString ">=")])
-    AbsYAPL.EQU -> prPrec i 0 (concatD [doc (showString "==")])
-    AbsYAPL.NE -> prPrec i 0 (concatD [doc (showString "!=")])
+    AbsYAPL.LTH _ -> prPrec i 0 (concatD [doc (showString "<")])
+    AbsYAPL.LE _ -> prPrec i 0 (concatD [doc (showString "<=")])
+    AbsYAPL.GTH _ -> prPrec i 0 (concatD [doc (showString ">")])
+    AbsYAPL.GE _ -> prPrec i 0 (concatD [doc (showString ">=")])
+    AbsYAPL.EQU _ -> prPrec i 0 (concatD [doc (showString "==")])
+    AbsYAPL.NE _ -> prPrec i 0 (concatD [doc (showString "!=")])

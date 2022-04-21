@@ -56,6 +56,8 @@ All other symbols are terminals.
   |  |  **|**  | //Ident// ``(`` //[Arg]// ``):`` //Block//
   |  |  **|**  | //Expr//
   |  |  **|**  | //[Item]// ``;``
+  |  |  **|**  | //Stmt//
+  |  |  **|**  | //Expr//
   | //Arg// | -> | //Ident//
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg//

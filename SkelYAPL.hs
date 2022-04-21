@@ -19,86 +19,88 @@ transIdent :: AbsYAPL.Ident -> Result
 transIdent x = case x of
   AbsYAPL.Ident string -> failure x
 
-transProgram :: AbsYAPL.Program -> Result
+transProgram :: Show a => AbsYAPL.Program' a -> Result
 transProgram x = case x of
-  AbsYAPL.Program topdefs -> failure x
+  AbsYAPL.Program _ topdefs -> failure x
 
-transTopDef :: AbsYAPL.TopDef -> Result
+transTopDef :: Show a => AbsYAPL.TopDef' a -> Result
 transTopDef x = case x of
-  AbsYAPL.FnDefNoArg ident block -> failure x
-  AbsYAPL.FnDefArg ident args block -> failure x
-  AbsYAPL.ExpDef expr -> failure x
-  AbsYAPL.Glob items -> failure x
+  AbsYAPL.FnDefNoArg _ ident block -> failure x
+  AbsYAPL.FnDefArg _ ident args block -> failure x
+  AbsYAPL.ExpDef _ expr -> failure x
+  AbsYAPL.Glob _ items -> failure x
+  AbsYAPL.Stm _ stmt -> failure x
+  AbsYAPL.Exp _ expr -> failure x
 
-transArg :: AbsYAPL.Arg -> Result
+transArg :: Show a => AbsYAPL.Arg' a -> Result
 transArg x = case x of
-  AbsYAPL.Ar ident -> failure x
+  AbsYAPL.Ar _ ident -> failure x
 
-transBlock :: AbsYAPL.Block -> Result
+transBlock :: Show a => AbsYAPL.Block' a -> Result
 transBlock x = case x of
-  AbsYAPL.Block stmts -> failure x
+  AbsYAPL.Block _ stmts -> failure x
 
-transStmt :: AbsYAPL.Stmt -> Result
+transStmt :: Show a => AbsYAPL.Stmt' a -> Result
 transStmt x = case x of
-  AbsYAPL.Empty -> failure x
-  AbsYAPL.BStmt block -> failure x
-  AbsYAPL.Decl items -> failure x
-  AbsYAPL.Ass ident expr -> failure x
-  AbsYAPL.Incr ident -> failure x
-  AbsYAPL.Decr ident -> failure x
-  AbsYAPL.Ret expr -> failure x
-  AbsYAPL.VRet -> failure x
-  AbsYAPL.Cond expr stmt -> failure x
-  AbsYAPL.CondElse expr stmt1 stmt2 -> failure x
-  AbsYAPL.While expr stmt -> failure x
-  AbsYAPL.ConstFor ident expr1 expr2 stmt -> failure x
-  AbsYAPL.SExp expr -> failure x
+  AbsYAPL.Empty _ -> failure x
+  AbsYAPL.BStmt _ block -> failure x
+  AbsYAPL.Decl _ items -> failure x
+  AbsYAPL.Ass _ ident expr -> failure x
+  AbsYAPL.Incr _ ident -> failure x
+  AbsYAPL.Decr _ ident -> failure x
+  AbsYAPL.Ret _ expr -> failure x
+  AbsYAPL.VRet _ -> failure x
+  AbsYAPL.Cond _ expr stmt -> failure x
+  AbsYAPL.CondElse _ expr stmt1 stmt2 -> failure x
+  AbsYAPL.While _ expr stmt -> failure x
+  AbsYAPL.ConstFor _ ident expr1 expr2 stmt -> failure x
+  AbsYAPL.SExp _ expr -> failure x
 
-transItem :: AbsYAPL.Item -> Result
+transItem :: Show a => AbsYAPL.Item' a -> Result
 transItem x = case x of
-  AbsYAPL.Init ident expr -> failure x
+  AbsYAPL.Init _ ident expr -> failure x
 
-transType :: AbsYAPL.Type -> Result
+transType :: Show a => AbsYAPL.Type' a -> Result
 transType x = case x of
-  AbsYAPL.Int -> failure x
-  AbsYAPL.Str -> failure x
-  AbsYAPL.Bool -> failure x
-  AbsYAPL.Void -> failure x
-  AbsYAPL.FuncType -> failure x
+  AbsYAPL.Int _ -> failure x
+  AbsYAPL.Str _ -> failure x
+  AbsYAPL.Bool _ -> failure x
+  AbsYAPL.Void _ -> failure x
+  AbsYAPL.FuncType _ -> failure x
 
-transExpr :: AbsYAPL.Expr -> Result
+transExpr :: Show a => AbsYAPL.Expr' a -> Result
 transExpr x = case x of
-  AbsYAPL.EVar ident -> failure x
-  AbsYAPL.ELitInt integer -> failure x
-  AbsYAPL.ELitTrue -> failure x
-  AbsYAPL.ELitFalse -> failure x
-  AbsYAPL.EApp ident exprs -> failure x
-  AbsYAPL.EString string -> failure x
-  AbsYAPL.EList -> failure x
-  AbsYAPL.Neg expr -> failure x
-  AbsYAPL.Not expr -> failure x
-  AbsYAPL.EMul expr1 mulop expr2 -> failure x
-  AbsYAPL.EAdd expr1 addop expr2 -> failure x
-  AbsYAPL.ERel expr1 relop expr2 -> failure x
-  AbsYAPL.EAnd expr1 expr2 -> failure x
-  AbsYAPL.EOr expr1 expr2 -> failure x
+  AbsYAPL.EVar _ ident -> failure x
+  AbsYAPL.ELitInt _ integer -> failure x
+  AbsYAPL.ELitTrue _ -> failure x
+  AbsYAPL.ELitFalse _ -> failure x
+  AbsYAPL.EApp _ ident exprs -> failure x
+  AbsYAPL.EString _ string -> failure x
+  AbsYAPL.EList _ -> failure x
+  AbsYAPL.Neg _ expr -> failure x
+  AbsYAPL.Not _ expr -> failure x
+  AbsYAPL.EMul _ expr1 mulop expr2 -> failure x
+  AbsYAPL.EAdd _ expr1 addop expr2 -> failure x
+  AbsYAPL.ERel _ expr1 relop expr2 -> failure x
+  AbsYAPL.EAnd _ expr1 expr2 -> failure x
+  AbsYAPL.EOr _ expr1 expr2 -> failure x
 
-transAddOp :: AbsYAPL.AddOp -> Result
+transAddOp :: Show a => AbsYAPL.AddOp' a -> Result
 transAddOp x = case x of
-  AbsYAPL.Plus -> failure x
-  AbsYAPL.Minus -> failure x
+  AbsYAPL.Plus _ -> failure x
+  AbsYAPL.Minus _ -> failure x
 
-transMulOp :: AbsYAPL.MulOp -> Result
+transMulOp :: Show a => AbsYAPL.MulOp' a -> Result
 transMulOp x = case x of
-  AbsYAPL.Times -> failure x
-  AbsYAPL.Div -> failure x
-  AbsYAPL.Mod -> failure x
+  AbsYAPL.Times _ -> failure x
+  AbsYAPL.Div _ -> failure x
+  AbsYAPL.Mod _ -> failure x
 
-transRelOp :: AbsYAPL.RelOp -> Result
+transRelOp :: Show a => AbsYAPL.RelOp' a -> Result
 transRelOp x = case x of
-  AbsYAPL.LTH -> failure x
-  AbsYAPL.LE -> failure x
-  AbsYAPL.GTH -> failure x
-  AbsYAPL.GE -> failure x
-  AbsYAPL.EQU -> failure x
-  AbsYAPL.NE -> failure x
+  AbsYAPL.LTH _ -> failure x
+  AbsYAPL.LE _ -> failure x
+  AbsYAPL.GTH _ -> failure x
+  AbsYAPL.GE _ -> failure x
+  AbsYAPL.EQU _ -> failure x
+  AbsYAPL.NE _ -> failure x
