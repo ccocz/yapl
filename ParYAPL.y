@@ -83,8 +83,6 @@ TopDef
   | Ident '(' ListArg '):' Block { (fst $1, AbsYAPL.FnDefArg (fst $1) (snd $1) (snd $3) (snd $5)) }
   | Expr { (fst $1, AbsYAPL.ExpDef (fst $1) (snd $1)) }
   | ListItem ';' { (fst $1, AbsYAPL.Glob (fst $1) (snd $1)) }
-  | Stmt { (fst $1, AbsYAPL.Stm (fst $1) (snd $1)) }
-  | Expr { (fst $1, AbsYAPL.Exp (fst $1) (snd $1)) }
 
 Arg :: { (AbsYAPL.BNFC'Position, AbsYAPL.Arg) }
 Arg : Ident { (fst $1, AbsYAPL.Ar (fst $1) (snd $1)) }

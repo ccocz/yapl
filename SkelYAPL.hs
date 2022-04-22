@@ -29,8 +29,6 @@ transTopDef x = case x of
   AbsYAPL.FnDefArg _ ident args block -> failure x
   AbsYAPL.ExpDef _ expr -> failure x
   AbsYAPL.Glob _ items -> failure x
-  AbsYAPL.Stm _ stmt -> failure x
-  AbsYAPL.Exp _ expr -> failure x
 
 transArg :: Show a => AbsYAPL.Arg' a -> Result
 transArg x = case x of

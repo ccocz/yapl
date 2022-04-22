@@ -28,8 +28,6 @@ data TopDef' a
     | FnDefArg a Ident [Arg' a] (Block' a)
     | ExpDef a (Expr' a)
     | Glob a [Item' a]
-    | Stm a (Stmt' a)
-    | Exp a (Expr' a)
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type Arg = Arg' BNFC'Position
@@ -123,8 +121,6 @@ instance HasPosition TopDef where
     FnDefArg p _ _ _ -> p
     ExpDef p _ -> p
     Glob p _ -> p
-    Stm p _ -> p
-    Exp p _ -> p
 
 instance HasPosition Arg where
   hasPosition = \case
