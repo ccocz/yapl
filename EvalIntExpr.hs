@@ -69,5 +69,5 @@ evalExpM (EVar _ v) = do
 	Nothing -> error $ "Varible not declared!"
 	Just y -> return y
 
-evalExpr :: Expr -> Value
-evalExpr e = evalExprM e Map.empty
+evalExpr :: Expr -> VEnv -> Value
+evalExpr e v = evalExprM e v

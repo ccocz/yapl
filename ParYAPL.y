@@ -8,7 +8,7 @@
 module ParYAPL
   ( happyError
   , myLexer
-  , pExpr
+  , pStmt
   ) where
 
 import Prelude
@@ -18,7 +18,7 @@ import LexYAPL
 
 }
 
-%name pExpr_internal Expr
+%name pStmt_internal Stmt
 -- no lexer declaration
 %monad { Err } { (>>=) } { return }
 %tokentype {Token}
@@ -217,7 +217,7 @@ myLexer = tokens
 
 -- Entrypoints
 
-pExpr :: [Token] -> Err AbsYAPL.Expr
-pExpr = fmap snd . pExpr_internal
+pStmt :: [Token] -> Err AbsYAPL.Stmt
+pStmt = fmap snd . pStmt_internal
 }
 

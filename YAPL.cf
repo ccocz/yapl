@@ -2,7 +2,7 @@
 
 layout ":", "):" ;
 
-entrypoints Expr ;
+entrypoints Stmt ;
 
 Program.        Program ::= [TopDef] ;
 

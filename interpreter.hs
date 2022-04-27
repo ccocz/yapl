@@ -6,11 +6,12 @@ import AbsYAPL
 
 import ErrM
 import EvalIntExpr
+import ExecStmt
 
 main = do
   interact calc
   putStrLn ""
 
 calc s =
-  let Ok e = pExpr (myLexer s)
-  in show (evalExpr e)
+  let Ok e = pStmt (myLexer s)
+  in show (execStmt e)
