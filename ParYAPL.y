@@ -111,7 +111,6 @@ Stmt :: { (AbsYAPL.BNFC'Position, AbsYAPL.Stmt) }
 Stmt
   : ';' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Empty (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
   | Block { (fst $1, AbsYAPL.BStmt (fst $1) (snd $1)) }
-  | ListItem ';' { (fst $1, AbsYAPL.Decl (fst $1) (snd $1)) }
   | Ident '=' Expr ';' { (fst $1, AbsYAPL.Ass (fst $1) (snd $1) (snd $3)) }
   | Ident '++' ';' { (fst $1, AbsYAPL.Incr (fst $1) (snd $1)) }
   | Ident '--' ';' { (fst $1, AbsYAPL.Decr (fst $1) (snd $1)) }

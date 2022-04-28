@@ -177,7 +177,6 @@ instance Print (AbsYAPL.Stmt' a) where
   prt i = \case
     AbsYAPL.Empty _ -> prPrec i 0 (concatD [doc (showString ";")])
     AbsYAPL.BStmt _ block -> prPrec i 0 (concatD [prt 0 block])
-    AbsYAPL.Decl _ items -> prPrec i 0 (concatD [prt 0 items, doc (showString ";")])
     AbsYAPL.Ass _ id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr, doc (showString ";")])
     AbsYAPL.Incr _ id_ -> prPrec i 0 (concatD [prt 0 id_, doc (showString "++"), doc (showString ";")])
     AbsYAPL.Decr _ id_ -> prPrec i 0 (concatD [prt 0 id_, doc (showString "--"), doc (showString ";")])

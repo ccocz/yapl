@@ -42,7 +42,6 @@ transStmt :: Show a => AbsYAPL.Stmt' a -> Result
 transStmt x = case x of
   AbsYAPL.Empty _ -> failure x
   AbsYAPL.BStmt _ block -> failure x
-  AbsYAPL.Decl _ items -> failure x
   AbsYAPL.Ass _ ident expr -> failure x
   AbsYAPL.Incr _ ident -> failure x
   AbsYAPL.Decr _ ident -> failure x

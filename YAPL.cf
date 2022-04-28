@@ -30,7 +30,7 @@ Empty.     Stmt ::= ";" ;
 
 BStmt.     Stmt ::= Block ;
 
-Decl.      Stmt ::= [Item] ";" ;
+-- Decl.      Stmt ::= [Item] ";" ;
 
 Init.      Item ::= Ident "=" Expr ";" ;
 

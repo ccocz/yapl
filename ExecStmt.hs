@@ -5,6 +5,7 @@ import AbsYAPL
 import EvalIntExpr
 import Data.Map as Map
 import EnvYAPL
+import Debug.Trace
 
 execStmtM :: Stmt -> State VEnv ()
 execStmtM (Empty _) = return ()
@@ -45,6 +46,12 @@ execStmtM (SExp _ e) = do
   en <- get
   -- fixme what to do with this value?
   let val = evalExpr e en
+  return ()
+
+execStmtM (Ass _ (Ident s) e) = do
+  en <- get
+  modify (Map.insert s $ evalExpr e en)
+  traceM("assigning: " ++ show s)
   return ()
 
 --execStmtM (SExp _ e) = return (evalExpr e)
