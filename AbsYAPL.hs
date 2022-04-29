@@ -24,8 +24,8 @@ data Program' a = Program a [TopDef' a]
 
 type TopDef = TopDef' BNFC'Position
 data TopDef' a
-    = FnDefNoArg a Ident (Block' a)
-    | FnDefArg a Ident [Arg' a] (Block' a)
+    = FnDefNoArgG a Ident (Block' a)
+    | FnDefArgG a Ident [Arg' a] (Block' a)
     | ExpDef a (Expr' a)
     | Glob a [Item' a]
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
@@ -52,6 +52,7 @@ data Stmt' a
     | While a (Expr' a) (Stmt' a)
     | ConstFor a Ident (Expr' a) (Expr' a) (Stmt' a)
     | SExp a (Expr' a)
+    | FnDefArg a Ident [Arg' a] (Block' a)
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type Item = Item' BNFC'Position
@@ -116,8 +117,8 @@ instance HasPosition Program where
 
 instance HasPosition TopDef where
   hasPosition = \case
-    FnDefNoArg p _ _ -> p
-    FnDefArg p _ _ _ -> p
+    FnDefNoArgG p _ _ -> p
+    FnDefArgG p _ _ _ -> p
     ExpDef p _ -> p
     Glob p _ -> p
 
@@ -143,6 +144,7 @@ instance HasPosition Stmt where
     While p _ _ -> p
     ConstFor p _ _ _ _ -> p
     SExp p _ -> p
+    FnDefArg p _ _ _ -> p
 
 instance HasPosition Item where
   hasPosition = \case

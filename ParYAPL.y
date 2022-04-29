@@ -79,8 +79,8 @@ Program
 
 TopDef :: { (AbsYAPL.BNFC'Position, AbsYAPL.TopDef) }
 TopDef
-  : Ident ':' Block { (fst $1, AbsYAPL.FnDefNoArg (fst $1) (snd $1) (snd $3)) }
-  | Ident '(' ListArg '):' Block { (fst $1, AbsYAPL.FnDefArg (fst $1) (snd $1) (snd $3) (snd $5)) }
+  : Ident ':' Block { (fst $1, AbsYAPL.FnDefNoArgG (fst $1) (snd $1) (snd $3)) }
+  | Ident '(' ListArg '):' Block { (fst $1, AbsYAPL.FnDefArgG (fst $1) (snd $1) (snd $3) (snd $5)) }
   | Expr { (fst $1, AbsYAPL.ExpDef (fst $1) (snd $1)) }
   | ListItem ';' { (fst $1, AbsYAPL.Glob (fst $1) (snd $1)) }
 
@@ -121,6 +121,7 @@ Stmt
   | 'while' '(' Expr '):' Stmt { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.While (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
   | 'for' '(' Ident '=' Expr ';' 'to' Expr '):' Stmt { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.ConstFor (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $8) (snd $10)) }
   | Expr ';' { (fst $1, AbsYAPL.SExp (fst $1) (snd $1)) }
+  | Ident '(' ListArg '):' Block { (fst $1, AbsYAPL.FnDefArg (fst $1) (snd $1) (snd $3) (snd $5)) }
 
 Item :: { (AbsYAPL.BNFC'Position, AbsYAPL.Item) }
 Item

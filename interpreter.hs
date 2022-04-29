@@ -1,17 +1,16 @@
 module Main where
 
-import LexYAPL
 import ParYAPL
-import AbsYAPL
 
 import ErrM
-import EvalIntExpr
 import ExecStmt
 
+main :: IO ()
 main = do
   interact calc
   putStrLn ""
 
+calc :: [Char] -> String
 calc s =
   let Ok e = pStmt (myLexer s)
-  in show (execStmt e)
+  in show (execStmt e Map.Empty)

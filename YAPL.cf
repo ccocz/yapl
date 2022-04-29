@@ -6,9 +6,9 @@ entrypoints Stmt ;
 
 Program.        Program ::= [TopDef] ;
 
-FnDefNoArg.	    TopDef ::= Ident ":" Block ;
+FnDefNoArgG.	    TopDef ::= Ident ":" Block ; --todo remove
 
-FnDefArg.       TopDef ::= Ident "(" [Arg] "):" Block ;
+FnDefArgG.       TopDef ::= Ident "(" [Arg] "):" Block ;
 
 Ar. 	        Arg ::= Ident;
 
@@ -55,6 +55,8 @@ While.     Stmt ::= "while" "(" Expr "):" Stmt ;
 ConstFor.  Stmt ::= "for" "(" Ident "=" Expr ";" "to" Expr "):" Stmt;
 
 SExp.      Stmt ::= Expr  ";" ;
+
+FnDefArg.  Stmt ::= Ident "(" [Arg] "):" Block ;
 
 ------------------------- Types ------------------------------
 

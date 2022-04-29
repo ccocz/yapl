@@ -3,7 +3,7 @@
 module EvalIntExpr (evalExpr) where
 
 import AbsYAPL
-import Data.Map as Map
+import qualified Data.Map as Map
 import EnvYAPL
 import Control.Monad.Reader
 import Debug.Trace
@@ -30,7 +30,7 @@ evalExprM :: Expr -> VEnv -> Value
 -- evalExpM (EInt n) = \_ -> n
 -- evalExpM (EInt n) = const n
 -- evalExpM :: MonadReader (Map Var Int) m => Exp -> m Int
-evalExprM (ELitInt _ n) = trace("exlitint: adf" ++ show n) return $ IntVal n
+evalExprM (ELitInt _ n) = return $ IntVal n
 evalExprM (ELitTrue _) = return $ BoolVal True
 evalExprM (ELitFalse _) = return $ BoolVal False
 --evalExprM (EApp _ ident list)
@@ -46,33 +46,44 @@ evalExprM (Not _ x) = do
   return not x'-}
 
 evalExprM (EMul _ l op r) = do
-  traceM("adding values: " ++ show l ++ " " ++ show r)
   let p' = mulOp op
   l' <- evalExprM l
   r' <- evalExprM r
   return (p' l' r')
 
 evalExprM (EAdd _ l op r) = do
-  traceM("adding values: " ++ show l ++ " " ++ show r)
   let p' = addOp op
   l' <- evalExprM l
   r' <- evalExprM r
   return (p' l' r')
 
 evalExprM (ERel _ l op r) = do
-  traceM("adding values: " ++ show l ++ " " ++ show r)
   let p' = relOp op
   l' <- evalExprM l
   r' <- evalExprM r
   return (p' l' r')
 
 evalExprM (EVar p (Ident v)) = do
-  traceM("getting value for: " ++ show v)
   s <- ask
   let x = Map.lookup v s
   case x of
     Nothing -> error $ "not declared" ++ show p
     Just y -> return y
+
+{-evalExprM (EApp _ (Ident f) values) = do
+  s <- ask
+  let x = Map.lookup f s
+  case x of
+    Nothing -> error $ "not declared function"
+    Just (Closure args b) -> return local (Map.union $ Map.fromList $ zip $ (map (\ (Ar _ (Ident s)) -> s) args) values) $ execStmt b
+-}
+{-evalExpM (ELet v l r) = do
+  l' <- evalExpM l
+  r' <- local (Map.insert v l') $ evalExpM r
+  return r'-}
+
+
+--apply (Closure l b) en = evalExprM b
 
 evalExpr :: Expr -> VEnv -> Value
 evalExpr e v = evalExprM e v

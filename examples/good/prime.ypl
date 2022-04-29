@@ -1,0 +1,14 @@
+{
+	is_prime(n): {
+	  prime = false;
+	  i = 2;
+	  while (i * i <= n): {
+	    if (n % i == 0): {
+	      return false;
+	    }
+	  }
+	  return true;
+	}
+
+	is_prime(5);
+}	
