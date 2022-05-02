@@ -58,6 +58,8 @@ SExp.      Stmt ::= Expr  ";" ;
 
 FnDefArg.  Stmt ::= Ident "(" [Arg] "):" Block ;
 
+Print.     Stmt ::= "out" "(" Expr ")" ";" ;
+
 ------------------------- Types ------------------------------
 
 internal     Int.       Type ::= "int" ;

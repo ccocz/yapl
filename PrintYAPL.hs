@@ -188,6 +188,7 @@ instance Print (AbsYAPL.Stmt' a) where
     AbsYAPL.ConstFor _ id_ expr1 expr2 stmt -> prPrec i 0 (concatD [doc (showString "for"), doc (showString "("), prt 0 id_, doc (showString "="), prt 0 expr1, doc (showString ";"), doc (showString "to"), prt 0 expr2, doc (showString "):"), prt 0 stmt])
     AbsYAPL.SExp _ expr -> prPrec i 0 (concatD [prt 0 expr, doc (showString ";")])
     AbsYAPL.FnDefArg _ id_ args block -> prPrec i 0 (concatD [prt 0 id_, doc (showString "("), prt 0 args, doc (showString "):"), prt 0 block])
+    AbsYAPL.Print _ expr -> prPrec i 0 (concatD [doc (showString "out"), doc (showString "("), prt 0 expr, doc (showString ")"), doc (showString ";")])
 
 instance Print (AbsYAPL.Item' a) where
   prt i = \case

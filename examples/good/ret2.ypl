@@ -1,0 +1,10 @@
+{
+	/*ret(n): {
+	  #prime = false;
+	  return n;
+	}*/
+
+#	x = 6;	
+
+	return 5;
+}	

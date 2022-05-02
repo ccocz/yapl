@@ -53,6 +53,7 @@ transStmt x = case x of
   AbsYAPL.ConstFor _ ident expr1 expr2 stmt -> failure x
   AbsYAPL.SExp _ expr -> failure x
   AbsYAPL.FnDefArg _ ident args block -> failure x
+  AbsYAPL.Print _ expr -> failure x
 
 transItem :: Show a => AbsYAPL.Item' a -> Result
 transItem x = case x of
