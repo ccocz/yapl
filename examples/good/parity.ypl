@@ -1,0 +1,8 @@
+{
+    isOdd(n): {
+        return n % 2 == 1;
+    }
+
+    ans1 = isOdd(13);
+    ans2 = isOdd(14);
+}

@@ -18,8 +18,11 @@ type Var = String
 type VEnv = Map.Map Var Value
 
 data Env = Env {
-  vEnv :: Map.Map Var Value,
+  vEnv :: Map.Map Var Loc,
   retVal :: Value
   } deriving Show
 
-type RT = ReaderT Env (StateT Env (ExceptT String IO))
+type Loc = Int
+type Mem = Map.Map Loc Value
+
+type RT = ReaderT Env (StateT Mem (ExceptT String IO))

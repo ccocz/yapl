@@ -3,18 +3,20 @@ module ExecStmt(execStmt) where
 import Control.Monad.State
 import Control.Monad.Reader
 import AbsYAPL
---import EvalIntExpr
 import qualified Data.Map as Map
 import EnvYAPL
 import Debug.Trace
 
 execStmt :: Stmt -> RT Env
+
 execStmt (Empty _) = do
-  en <- get
+  en <- ask
   return en
+
 execStmt w@(While _ e s) = do
-   en <- get
-   if (evalExpr e en) == (BoolVal True)
+   --en <- get
+   (BoolVal b) <- evalExpr e
+   if b
       then
          execStmt s >>
          execStmt w
@@ -22,58 +24,77 @@ execStmt w@(While _ e s) = do
          execStmt (Empty undefined) --todo
 
 execStmt (Cond _ e s) = do
-  en <- get
-  if (evalExpr e en) == (BoolVal True) then
-    execStmt s
-  else
-    execStmt (Empty undefined) --todo
+  (BoolVal b) <- evalExpr e
+  if b
+    then execStmt s
+    else execStmt (Empty undefined) --todo
 
 execStmt (CondElse _ e s1 s2) = do
-  en <- get
-  if (evalExpr e en) == (BoolVal True) then
-    execStmt s1
-  else
-    execStmt s2
+  (BoolVal b) <- evalExpr e
+  if b
+    then execStmt s1
+    else execStmt s2
 
 -- fixme local variables within blocks
 execStmt (BStmt _ (Block _ (x : xs))) = do
+  em <- get
+  traceM("block env: " ++ show em ++ " " ++ show x)
   en <- execStmt x
-  traceM("block env: " ++ show en)
   if ((retVal en) == NoneVal) then
     do
-    traceM("x: " ++ show x)
-    (execStmt (BStmt undefined (Block undefined xs)))-- fixme
+    traceM("xx: " ++ show x)
+    local (\_ -> en) (execStmt (BStmt undefined (Block undefined xs)))-- fixme
   else do
-    traceM("faak:" ++ show en)
+    --traceM("faak:" ++ show en)
     return en
 
 execStmt (BStmt _ (Block _ [])) = do
-  en <- get
+  en <- ask
   --traceM(show en)
   return en
 
 execStmt (SExp _ e) = do
-  en <- get
+  en <- ask
   -- fixme what to do with this value? >>
-  let val = evalExpr e en
-  traceM("valexp: " ++ show val)
+  val <- evalExpr e
+  --traceM("valexp: " ++ show val)
   return en
 
 execStmt (Ass _ (Ident s) e) = do
-  en <- get
-  modify (\v -> (Env (Map.insert s (evalExpr e en) (vEnv v)) (retVal v)))
-  return en
+  en <- ask
+  mem <- get
+  ex <- evalExpr e
+  let x = Map.lookup s (vEnv en)
+  case x of
+    Nothing -> do
+      let newLoc = (Map.size mem)
+      modify (Map.insert newLoc ex)
+      return (Env (Map.insert s newLoc (vEnv en)) (retVal en))
+    Just y -> do
+      modify (Map.insert y ex)
+      return en
+  --modify (Map.insert varLoc ex)
+  --return en
+  --traceM("finished" ++ show s ++ " " ++ show e)
+
+{-getLoc :: RT Loc
+getLoc = do
+  mem <- get
+  return (Loc Map.size mem)-}
 
 execStmt (FnDefArg _ (Ident s) l b) = do
-  en <- get
+  en <- ask
+  mem <- get
   -- todo: what if it exists
-  modify (\e -> (Env (Map.insert s (Closure l b) (vEnv e)) (retVal e)))
-  return en
+  let newLoc = (Map.size mem)
+  modify (Map.insert newLoc (Closure l b))
+  return (Env (Map.insert s newLoc (vEnv en)) (retVal en))
+  --return (Env (Map.insert s (Closure l b) (vEnv e)) (retVal e))
 
 execStmt (Ret _ e) = do
-  en <- get
-  let val = evalExpr e en
-  traceM("val: " ++ show val)
+  en <- ask
+  val <- evalExpr e
+  --traceM("val: " ++ show val)
   return (Env (vEnv en) val)
 
 {-execStmt (Print _ e) = do
@@ -102,7 +123,7 @@ relOp (GE _) x y = BoolVal (x >= y)
 relOp (EQU _) x y = BoolVal (x == y)
 relOp (NE _) x y = BoolVal (x /= y)
 
-evalExpr :: Expr -> Env -> RT Value
+evalExpr :: Expr -> RT Value
 -- evalExpM (EInt n) = \_ -> n
 -- evalExpM (EInt n) = const n
 -- evalExpM :: MonadReader (Map Var Int) m => Exp -> m Int
@@ -143,18 +164,34 @@ evalExpr (EVar p (Ident v)) = do
   s <- ask
   let x = Map.lookup v (vEnv s)
   case x of
-    Nothing -> error $ "not declared" ++ show p
-    Just y -> return y
+    Nothing -> error $ "not declared variable "
+      ++ show v
+      ++ " on line "
+      ++ show p
+    Just y -> do
+      val <- gets (Map.! y)
+      return val
+
+-- why not have only reader monad?
 
 evalExpr (EApp _ (Ident f) values) = do
   s <- ask
+  mem <- get
   let x = Map.lookup f (vEnv s)
   case x of
     Nothing -> error $ "not declared function"
-    Just (Closure args b) -> do
-      let keys = map (\ (Ar _ (Ident st)) -> st) args
-      vals <- mapM evalExpr values
-      let newMap = Map.fromList $ zip keys vals
-      --traceM("map before: " ++ show (Map.union newMap (vEnv s)))
-      let ig = local (\e -> e) $ execStmt (BStmt undefined b)
-      return (NoneVal)
+    Just y -> do
+      f <- gets(Map.! y)
+      case f of
+        (Closure args b) -> do
+          let keys = map (\ (Ar _ (Ident st)) -> st) args
+          let size = Map.size mem
+          let locs = [size..(size + (length keys) - 1)]
+          vals <- mapM evalExpr values
+          let newMap = Map.fromList $ zip keys locs
+          let newState = Map.fromList $ zip locs vals
+          modify (Map.union newState)
+          --traceM("args map " ++ show newMap)
+          ig <- local (\e -> Env (Map.union newMap (vEnv e)) (retVal e)) $ execStmt (BStmt undefined b)
+          return (retVal ig)
+        _ -> error $ "function and variable names collide"

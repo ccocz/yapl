@@ -7,18 +7,46 @@ import ExecStmt
 import Data.Map as Map
 import EnvYAPL
 import Control.Monad.State
+import Control.Monad.Reader
+import Control.Monad.Except
 
-main :: IO ()
-main = do
-  interact calc
-  putStrLn ""
+import System.Environment ( getArgs )
 
 start = Env {
   vEnv = Map.empty,
   retVal = NoneVal
 }
 
-calc :: [Char] -> String
+main :: IO ()
+main = do
+   file <- getArgs
+   case file of
+       [] -> error "No args provided!"
+       file:_ -> do
+           program <- readFile file
+           case pStmt (myLexer program) of
+               Ok p  -> do
+                 r <- runExceptT (runStateT (runReaderT (execStmt p) start) Map.empty)
+                 case r of
+                   (Left e) -> putStrLn $ "Error: " ++ e
+                   (Right r) -> putStrLn $ "last env: " ++ show r
+               Bad e -> error e
+
+{-main :: IO ()
+main = do
+  interact calc
+  putStrLn ""
+
+--calc :: [Char] -> String
 calc s =
-  let Ok e = pStmt (myLexer s)
-  in show (evalState (execStmt e) start)
+  case pStmt (myLexer s) of
+    Ok e -> let
+      r = runExceptT (runStateT (runReaderT (execStmt e) start) start) in
+      case r of
+        (Left e) -> show e
+        (Right r) -> reportResult r
+    Bad e -> error e
+
+reportResult :: Either String (Env, Env) -> String
+reportResult (Right len) = show len
+reportResult (Left e) = show e-}
