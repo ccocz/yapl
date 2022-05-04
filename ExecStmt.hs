@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module ExecStmt(execStmt) where
 
 import Control.Monad.State
@@ -38,11 +40,11 @@ execStmt (CondElse _ e s1 s2) = do
 -- fixme local variables within blocks
 execStmt (BStmt _ (Block _ (x : xs))) = do
   em <- get
+#ifdef DEBUG
   traceM("block env: " ++ show em ++ " " ++ show x)
+#endif
   en <- execStmt x
   if ((retVal en) == NoneVal) then
-    do
-    traceM("xx: " ++ show x)
     local (\_ -> en) (execStmt (BStmt undefined (Block undefined xs)))-- fixme
   else do
     --traceM("faak:" ++ show en)
@@ -73,14 +75,6 @@ execStmt (Ass _ (Ident s) e) = do
     Just y -> do
       modify (Map.insert y ex)
       return en
-  --modify (Map.insert varLoc ex)
-  --return en
-  --traceM("finished" ++ show s ++ " " ++ show e)
-
-{-getLoc :: RT Loc
-getLoc = do
-  mem <- get
-  return (Loc Map.size mem)-}
 
 execStmt (FnDefArg _ (Ident s) l b) = do
   en <- ask
@@ -94,16 +88,19 @@ execStmt (FnDefArg _ (Ident s) l b) = do
 execStmt (Ret _ e) = do
   en <- ask
   val <- evalExpr e
-  --traceM("val: " ++ show val)
+#ifdef DEBUG
+  traceM("val: " ++ show val)
+#endif
   return (Env (vEnv en) val)
 
-{-execStmt (Print _ e) = do
-  en <- get
-  let ev = evalExpr e en
-  case ev of
-    (IntVal i) ->
-      putStrLn $ show e
-  return en-}
+execStmt (Print _ e) = do
+  en <- ask
+  val <- evalExpr e
+  (liftIO $ putStrLn $ show val)
+#ifdef DEBUG
+  traceM("val: " ++ show val)
+#endif
+  return en
 
 mulOp :: MulOp -> Value -> Value -> Value
 mulOp (Times _) (IntVal x) (IntVal y) = IntVal (x * y)
@@ -191,7 +188,9 @@ evalExpr (EApp _ (Ident f) values) = do
           let newMap = Map.fromList $ zip keys locs
           let newState = Map.fromList $ zip locs vals
           modify (Map.union newState)
-          --traceM("args map " ++ show newMap)
+#ifdef DEBUG
+          traceM("args map " ++ show newMap)
+#endif
           ig <- local (\e -> Env (Map.union newMap (vEnv e)) (retVal e)) $ execStmt (BStmt undefined b)
           return (retVal ig)
         _ -> error $ "function and variable names collide"

@@ -5,6 +5,7 @@
 	    ok = false;
 	  i = 3;
 	  while (i * i <= n): {
+	    out(i);
 	    if (n % i == 0): {
 	      ok = false;
 	    }
@@ -13,5 +14,10 @@
 	  return ok;
 	}
 
-	ans = is_prime(10);
+	ans = is_prime(100);
+
+	if (ans == true):
+	    out("prime");
+	else:
+	    out("not prime");
 }

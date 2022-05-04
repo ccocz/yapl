@@ -29,7 +29,8 @@ main = do
                  r <- runExceptT (runStateT (runReaderT (execStmt p) start) Map.empty)
                  case r of
                    (Left e) -> putStrLn $ "Error: " ++ e
-                   (Right r) -> putStrLn $ "last env: " ++ show r
+                   --(Right r) -> putStrLn $ "last env: " ++ show r
+                   (Right r) -> putStrLn $ "finished program"
                Bad e -> error e
 
 {-main :: IO ()
