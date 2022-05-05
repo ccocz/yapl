@@ -1,0 +1,9 @@
+times(a): {
+    return a * 2;
+}
+
+a=13;
+
+main(x): {
+    out(times(a));
+}

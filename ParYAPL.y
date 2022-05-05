@@ -8,7 +8,7 @@
 module ParYAPL
   ( happyError
   , myLexer
-  , pStmt
+  , pProgram
   ) where
 
 import Prelude
@@ -18,7 +18,7 @@ import LexYAPL
 
 }
 
-%name pStmt_internal Stmt
+%name pProgram_internal Program
 -- no lexer declaration
 %monad { Err } { (>>=) } { return }
 %tokentype {Token}
@@ -83,7 +83,7 @@ TopDef
   : Ident ':' Block { (fst $1, AbsYAPL.FnDefNoArgG (fst $1) (snd $1) (snd $3)) }
   | Ident '(' ListArg '):' Block { (fst $1, AbsYAPL.FnDefArgG (fst $1) (snd $1) (snd $3) (snd $5)) }
   | Expr { (fst $1, AbsYAPL.ExpDef (fst $1) (snd $1)) }
-  | ListItem ';' { (fst $1, AbsYAPL.Glob (fst $1) (snd $1)) }
+  | ListItem { (fst $1, AbsYAPL.Glob (fst $1) (snd $1)) }
 
 Arg :: { (AbsYAPL.BNFC'Position, AbsYAPL.Arg) }
 Arg : Ident { (fst $1, AbsYAPL.Ar (fst $1) (snd $1)) }
@@ -219,7 +219,7 @@ myLexer = tokens
 
 -- Entrypoints
 
-pStmt :: [Token] -> Err AbsYAPL.Stmt
-pStmt = fmap snd . pStmt_internal
+pProgram :: [Token] -> Err AbsYAPL.Program
+pProgram = fmap snd . pProgram_internal
 }
 

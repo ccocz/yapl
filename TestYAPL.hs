@@ -22,7 +22,7 @@ import Control.Monad      ( when )
 import AbsYAPL    ()
 import LayoutYAPL ( resolveLayout )
 import LexYAPL    ( Token, mkPosToken )
-import ParYAPL    ( pStmt, myLexer )
+import ParYAPL    ( pProgram, myLexer )
 import PrintYAPL  ( Print, printTree )
 import SkelYAPL   ()
 
@@ -72,7 +72,7 @@ main = do
   args <- getArgs
   case args of
     ["--help"] -> usage
-    []         -> getContents >>= run 2 pStmt
-    "-s":fs    -> mapM_ (runFile 0 pStmt) fs
-    fs         -> mapM_ (runFile 2 pStmt) fs
+    []         -> getContents >>= run 2 pProgram
+    "-s":fs    -> mapM_ (runFile 0 pProgram) fs
+    fs         -> mapM_ (runFile 2 pProgram) fs
 

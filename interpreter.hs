@@ -24,30 +24,11 @@ main = do
        [] -> error "No args provided!"
        file:_ -> do
            program <- readFile file
-           case pStmt (myLexer program) of
+           case pProgram (myLexer program) of
                Ok p  -> do
-                 r <- runExceptT (runStateT (runReaderT (execStmt p) start) Map.empty)
+                 r <- runExceptT (runStateT (runReaderT (interpret p) start) Map.empty)
                  case r of
                    (Left e) -> putStrLn $ "Error: " ++ e
                    --(Right r) -> putStrLn $ "last env: " ++ show r
                    (Right r) -> putStrLn $ "finished program"
                Bad e -> error e
-
-{-main :: IO ()
-main = do
-  interact calc
-  putStrLn ""
-
---calc :: [Char] -> String
-calc s =
-  case pStmt (myLexer s) of
-    Ok e -> let
-      r = runExceptT (runStateT (runReaderT (execStmt e) start) start) in
-      case r of
-        (Left e) -> show e
-        (Right r) -> reportResult r
-    Bad e -> error e
-
-reportResult :: Either String (Env, Env) -> String
-reportResult (Right len) = show len
-reportResult (Left e) = show e-}

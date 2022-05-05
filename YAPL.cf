@@ -2,13 +2,13 @@
 
 layout ":", "):" ;
 
-entrypoints Stmt ;
+entrypoints Program ;
 
 Program.        Program ::= [TopDef] ;
 
-FnDefNoArgG.	    TopDef ::= Ident ":" Block ; --todo remove
+FnDefNoArgG.	TopDef ::= Ident ":" Block ; --todo remove
 
-FnDefArgG.       TopDef ::= Ident "(" [Arg] "):" Block ;
+FnDefArgG.      TopDef ::= Ident "(" [Arg] "):" Block ;
 
 Ar. 	        Arg ::= Ident;
 
@@ -16,7 +16,7 @@ separator       Arg "," ;
 
 ExpDef.         TopDef ::= Expr ;
 
-Glob.           TopDef ::= [Item] ";" ;
+Glob.           TopDef ::= [Item];
 
 separator       nonempty TopDef "" ;
 

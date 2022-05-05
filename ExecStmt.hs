@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 
-module ExecStmt(execStmt) where
+module ExecStmt(interpret) where
 
 import Control.Monad.State
 import Control.Monad.Reader
@@ -8,6 +8,8 @@ import AbsYAPL
 import qualified Data.Map as Map
 import EnvYAPL
 import Debug.Trace
+
+-- fixme new loc duplicates
 
 execStmt :: Stmt -> RT Env
 
@@ -18,6 +20,7 @@ execStmt (Empty _) = do
 execStmt w@(While _ e s) = do
    --en <- get
    (BoolVal b) <- evalExpr e
+   -- local?
    if b
       then
          execStmt s >>
@@ -101,6 +104,15 @@ execStmt (Print _ e) = do
   traceM("val: " ++ show val)
 #endif
   return en
+
+assignAll :: [Item] -> RT Env
+assignAll [] = do
+  en <- ask
+  return en
+assignAll ((Init _ s e) : xs) = do
+  en <- execStmt (Ass undefined s e)
+  ret <- local (\_ -> en) (assignAll xs)
+  return ret
 
 mulOp :: MulOp -> Value -> Value -> Value
 mulOp (Times _) (IntVal x) (IntVal y) = IntVal (x * y)
@@ -194,3 +206,35 @@ evalExpr (EApp _ (Ident f) values) = do
           ig <- local (\e -> Env (Map.union newMap (vEnv e)) (retVal e)) $ execStmt (BStmt undefined b)
           return (retVal ig)
         _ -> error $ "function and variable names collide"
+
+collect :: [TopDef] -> RT Env
+collect [] = do
+  en <- ask
+  return en
+collect (x : xs) = case x of
+  --(FnDefNoArgG _ s b) ->
+  --(ExpDef _ e) ->
+  f@(FnDefArgG _ s l b) -> do
+    ret <- execStmt (FnDefArg undefined s l b)
+    nxt <- local (\_ -> ret) (collect xs)
+    return nxt
+  (Glob _ l) -> do
+    ret <- assignAll l
+    nxt <- local (\_ -> ret) (collect xs)
+    return nxt
+
+interpret :: Program -> RT ()
+interpret (Program _ l) = go l where
+  go x = do
+    --traceM("collection started")
+    mal <- collect x
+    st <- get
+#ifdef DEBUG
+    traceM("finished: " ++ show mal)
+    traceM("f state: " ++ show st)
+#endif
+    let x = Map.lookup "main" (vEnv mal)
+    case x of
+      Nothing -> error $ "main function not defined"
+      _ -> local (\_ -> mal) (execStmt (SExp undefined (EApp undefined (Ident "main") [])))
+    return ()

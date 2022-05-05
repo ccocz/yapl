@@ -149,7 +149,7 @@ instance Print (AbsYAPL.TopDef' a) where
     AbsYAPL.FnDefNoArgG _ id_ block -> prPrec i 0 (concatD [prt 0 id_, doc (showString ":"), prt 0 block])
     AbsYAPL.FnDefArgG _ id_ args block -> prPrec i 0 (concatD [prt 0 id_, doc (showString "("), prt 0 args, doc (showString "):"), prt 0 block])
     AbsYAPL.ExpDef _ expr -> prPrec i 0 (concatD [prt 0 expr])
-    AbsYAPL.Glob _ items -> prPrec i 0 (concatD [prt 0 items, doc (showString ";")])
+    AbsYAPL.Glob _ items -> prPrec i 0 (concatD [prt 0 items])
 
 instance Print (AbsYAPL.Arg' a) where
   prt i = \case
