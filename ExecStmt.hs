@@ -7,7 +7,13 @@ import Control.Monad.Reader
 import AbsYAPL
 import qualified Data.Map as Map
 import EnvYAPL
-import Debug.Trace
+
+data LogOp = LogOpAnd | LogOpOr
+
+logOp :: LogOp -> Value -> Value -> Value
+logOp LogOpAnd (BoolVal l) (BoolVal r) = BoolVal (l && r)
+logOp LogOpOr (BoolVal l) (BoolVal r) = BoolVal (l || r)
+logOp _ _ _ = error $ "logical operation on non-boolean"
 
 -- fixme new loc duplicates
 
@@ -19,7 +25,11 @@ execStmt (Empty _) = do
 
 execStmt w@(While _ e s) = do
    --en <- get
-   (BoolVal b) <- evalExpr e
+   e' <- evalExpr e
+   let b = case e' of
+        (BoolVal b') -> b'
+        _ -> error $ "while condition non-boolean"
+   --(BoolVal b) <- evalExpr e
    -- local?
    if b
       then
@@ -42,7 +52,6 @@ execStmt (CondElse _ e s1 s2) = do
 
 -- fixme local variables within blocks
 execStmt (BStmt _ (Block _ (x : xs))) = do
-  em <- get
 #ifdef DEBUG
   traceM("block env: " ++ show em ++ " " ++ show x)
 #endif
@@ -105,6 +114,9 @@ execStmt (Print _ e) = do
 #endif
   return en
 
+execStmt (ConstFor _ s e1 e2 stmt) = do
+  e
+
 assignAll :: [Item] -> RT Env
 assignAll [] = do
   en <- ask
@@ -118,11 +130,13 @@ mulOp :: MulOp -> Value -> Value -> Value
 mulOp (Times _) (IntVal x) (IntVal y) = IntVal (x * y)
 mulOp (Div _) (IntVal x) (IntVal y) = IntVal (div x y)
 mulOp (Mod _) (IntVal x) (IntVal y) = IntVal (mod x y)
+mulOp _ _ _ = error $ "*,/,% operator on inconsistent types"
 
 addOp :: AddOp -> Value -> Value -> Value
 addOp (Plus _) (IntVal x) (IntVal y) = IntVal (x + y)
 addOp (Minus _) (IntVal x) (IntVal y) = IntVal (x - y)
 addOp (Plus _) (StringVal x) (StringVal y) = StringVal (x ++ y)
+addOp _ _ _ = error $ "-,+ operator on inconsistent types"
 
 relOp :: RelOp -> Value -> Value -> Value
 relOp (LTH _) x y = BoolVal (x < y)
@@ -133,13 +147,9 @@ relOp (EQU _) x y = BoolVal (x == y)
 relOp (NE _) x y = BoolVal (x /= y)
 
 evalExpr :: Expr -> RT Value
--- evalExpM (EInt n) = \_ -> n
--- evalExpM (EInt n) = const n
--- evalExpM :: MonadReader (Map Var Int) m => Exp -> m Int
 evalExpr (ELitInt _ n) = return $ IntVal n
 evalExpr (ELitTrue _) = return $ BoolVal True
 evalExpr (ELitFalse _) = return $ BoolVal False
---evalExpr (EApp _ ident list)
 evalExpr (EString _ str) = return $ StringVal str
 -- evalExpr (EList _ x) = return x
 
@@ -181,7 +191,21 @@ evalExpr (EVar p (Ident v)) = do
       val <- gets (Map.! y)
       return val
 
--- why not have only reader monad?
+evalExpr (EAnd _ l r) = do
+  l' <- evalExpr l
+  r' <- evalExpr r
+  return (logOp LogOpAnd l' r')
+  --case (l', r') of
+    --((BoolVal vl), (BoolVal vr)) -> return (BoolVal (vl && vr))
+    --_ -> error $ "and operator on non-boolean"
+
+evalExpr (EOr _ l r) = do
+  l' <- evalExpr l
+  r' <- evalExpr r
+  return (logOp LogOpOr l' r')
+  --case (l', r') of
+    --((BoolVal vl), (BoolVal vr)) -> return (BoolVal (vl || vr))
+    --_ -> error $ "and operator on non-boolean"
 
 evalExpr (EApp _ (Ident f) values) = do
   s <- ask
@@ -190,8 +214,8 @@ evalExpr (EApp _ (Ident f) values) = do
   case x of
     Nothing -> error $ "not declared function"
     Just y -> do
-      f <- gets(Map.! y)
-      case f of
+      fn <- gets(Map.! y)
+      case fn of
         (Closure args b) -> do
           let keys = map (\ (Ar _ (Ident st)) -> st) args
           let size = Map.size mem
@@ -212,9 +236,7 @@ collect [] = do
   en <- ask
   return en
 collect (x : xs) = case x of
-  --(FnDefNoArgG _ s b) ->
-  --(ExpDef _ e) ->
-  f@(FnDefArgG _ s l b) -> do
+  FnDefArgG _ s l b -> do
     ret <- execStmt (FnDefArg undefined s l b)
     nxt <- local (\_ -> ret) (collect xs)
     return nxt
@@ -228,13 +250,12 @@ interpret (Program _ l) = go l where
   go x = do
     --traceM("collection started")
     mal <- collect x
-    st <- get
 #ifdef DEBUG
     traceM("finished: " ++ show mal)
     traceM("f state: " ++ show st)
 #endif
-    let x = Map.lookup "main" (vEnv mal)
-    case x of
+    let main = Map.lookup "main" (vEnv mal)
+    case main of
       Nothing -> error $ "main function not defined"
       _ -> local (\_ -> mal) (execStmt (SExp undefined (EApp undefined (Ident "main") [])))
     return ()

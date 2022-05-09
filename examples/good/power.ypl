@@ -1,9 +1,9 @@
-times(a): {
-    return a * 2;
-}
-
-a=13;
-
-main(x): {
-    out(times(a));
+main(): {
+    i = 0;
+    while (i < 10): {
+        if (i % 2 == 0):
+            out(i);
+        i = i + 1;
+    }
+    out(i);
 }

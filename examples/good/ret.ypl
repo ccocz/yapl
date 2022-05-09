@@ -1,8 +1,7 @@
-{
-	ret(n): {
-	  return n;
-	  return 10;
-	}
-
-	test = ret(2*7);
-}	
+main(): {
+    a = 2 * 3;
+    if (false || a == 6):
+        out("worked");
+    else:
+        out("worked2");
+}

@@ -1,8 +1,24 @@
-{
-    fact(n): {
-        if (n <= 1): return 1;
-        return n * fact(n - 1);
-    }
+main(): {
+    out(fact(7));
+    out(factr(7));
+}
 
-    out(fact(10));
+# iterative
+fact(n): {
+    r = 1;
+    i = 2;
+    while (i <= n): {
+        r = r * i;
+        i = i + 1;
+    }
+    #for (i = 2; to n):
+     #   r = r * i;
+    return r;
+}
+
+# recursive
+factr(n): {
+    if (n < 2):
+        return n;
+    return n * factr(n - 1);
 }
