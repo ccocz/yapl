@@ -127,6 +127,18 @@ execStmt (ConstFor _ (Ident s) e1 e2 stmt) = do
   mod <- local (\e -> Env (Map.insert s newLoc (vEnv e)) (retVal e)) (execConstFor newLoc end stmt)
   return mod
 
+execStmt (Incr _ i@(Ident s)) = do
+  val <- evalExpr (EVar undefined i)
+  case val of
+    (IntVal n) -> execStmt (Ass undefined i (ELitInt undefined (n + 1)))
+    _ -> error $ "incremental on non int value"
+
+execStmt (Decr _ i@(Ident s)) = do
+  val <- evalExpr (EVar undefined i)
+  case val of
+    (IntVal n) -> execStmt (Ass undefined i (ELitInt undefined (n - 1)))
+    _ -> error $ "decremental on non int value"
+
 execConstFor :: Loc -> Integer -> Stmt -> RT Env
 execConstFor loc end stmt = do
   st <- get
