@@ -1,0 +1,7 @@
+sum(a): {
+    return a;
+}
+
+main(): {
+    out(sum());
+}

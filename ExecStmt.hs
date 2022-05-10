@@ -114,8 +114,29 @@ execStmt (Print _ e) = do
 #endif
   return en
 
-execStmt (ConstFor _ s e1 e2 stmt) = do
-  e
+execStmt (ConstFor _ (Ident s) e1 e2 stmt) = do
+  init <- evalExpr e1
+  last <- evalExpr e2
+  let (start, end) = case (init, last) of
+        (IntVal n, IntVal m) -> (n, m)
+        _ -> error $ "invalid for init/end expression"
+  mem <- get
+  en <- ask
+  let newLoc = (Map.size mem)
+  modify (Map.insert newLoc init)
+  mod <- local (\e -> Env (Map.insert s newLoc (vEnv e)) (retVal e)) (execConstFor newLoc end stmt)
+  return mod
+
+execConstFor :: Loc -> Integer -> Stmt -> RT Env
+execConstFor loc end stmt = do
+  st <- get
+  en <- ask
+  (IntVal now) <- gets(Map.! loc)
+  if (now <= end) then do
+     execStmt stmt
+     modify (Map.insert loc (IntVal (now + 1)))
+     execConstFor loc end stmt
+  else return en
 
 assignAll :: [Item] -> RT Env
 assignAll [] = do
