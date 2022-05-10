@@ -115,25 +115,24 @@ execStmt (Print _ e) = do
   return en
 
 execStmt (ConstFor _ (Ident s) e1 e2 stmt) = do
-  init <- evalExpr e1
-  last <- evalExpr e2
-  let (start, end) = case (init, last) of
+  begin <- evalExpr e1
+  final <- evalExpr e2
+  let (start, end) = case (begin, final) of
         (IntVal n, IntVal m) -> (n, m)
         _ -> error $ "invalid for init/end expression"
   mem <- get
-  en <- ask
   let newLoc = (Map.size mem)
-  modify (Map.insert newLoc init)
-  mod <- local (\e -> Env (Map.insert s newLoc (vEnv e)) (retVal e)) (execConstFor newLoc end stmt)
-  return mod
+  modify (Map.insert newLoc begin)
+  mdf <- local (\e -> Env (Map.insert s newLoc (vEnv e)) (retVal e)) (execConstFor newLoc end stmt)
+  return mdf
 
-execStmt (Incr _ i@(Ident s)) = do
+execStmt (Incr _ i) = do
   val <- evalExpr (EVar undefined i)
   case val of
     (IntVal n) -> execStmt (Ass undefined i (ELitInt undefined (n + 1)))
     _ -> error $ "incremental on non int value"
 
-execStmt (Decr _ i@(Ident s)) = do
+execStmt (Decr _ i) = do
   val <- evalExpr (EVar undefined i)
   case val of
     (IntVal n) -> execStmt (Ass undefined i (ELitInt undefined (n - 1)))
@@ -141,11 +140,10 @@ execStmt (Decr _ i@(Ident s)) = do
 
 execConstFor :: Loc -> Integer -> Stmt -> RT Env
 execConstFor loc end stmt = do
-  st <- get
   en <- ask
   (IntVal now) <- gets(Map.! loc)
   if (now <= end) then do
-     execStmt stmt
+     _ <- execStmt stmt
      modify (Map.insert loc (IntVal (now + 1)))
      execConstFor loc end stmt
   else return en
@@ -288,7 +286,7 @@ interpret (Program _ l) = go l where
     traceM("f state: " ++ show st)
 #endif
     let main = Map.lookup "main" (vEnv mal)
-    case main of
-      Nothing -> error $ "main function not defined"
-      _ -> local (\_ -> mal) (execStmt (SExp undefined (EApp undefined (Ident "main") [])))
+    _ <- case main of
+          Nothing -> error $ "main function not defined"
+          _ -> local (\_ -> mal) (execStmt (SExp undefined (EApp undefined (Ident "main") [])))
     return ()
