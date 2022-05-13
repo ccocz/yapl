@@ -24,10 +24,7 @@ data Program' a = Program a [TopDef' a]
 
 type TopDef = TopDef' BNFC'Position
 data TopDef' a
-    = FnDefNoArgG a Ident (Block' a)
-    | FnDefArgG a Ident [Arg' a] (Block' a)
-    | ExpDef a (Expr' a)
-    | Glob a [Item' a]
+    = FnDefArgG a Ident [Arg' a] (Block' a) | Glob a [Item' a]
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type Arg = Arg' BNFC'Position
@@ -118,9 +115,7 @@ instance HasPosition Program where
 
 instance HasPosition TopDef where
   hasPosition = \case
-    FnDefNoArgG p _ _ -> p
     FnDefArgG p _ _ _ -> p
-    ExpDef p _ -> p
     Glob p _ -> p
 
 instance HasPosition Arg where

@@ -1,7 +1,7 @@
-sum(a): {
-    return a;
+sum(a, b): {
+    return a+b;
 }
 
 main(): {
-    out(sum());
+    out(sum(1));
 }

@@ -7,13 +7,15 @@ import Control.Monad.Reader
 import AbsYAPL
 import qualified Data.Map as Map
 import EnvYAPL
+import Debug.Trace
 
 data LogOp = LogOpAnd | LogOpOr
+type Pos = (Int, Int)
 
-logOp :: LogOp -> Value -> Value -> Value
-logOp LogOpAnd (BoolVal l) (BoolVal r) = BoolVal (l && r)
-logOp LogOpOr (BoolVal l) (BoolVal r) = BoolVal (l || r)
-logOp _ _ _ = error $ "logical operation on non-boolean"
+logOp :: LogOp -> Pos -> Value -> Value -> Value
+logOp LogOpAnd _ (BoolVal l) (BoolVal r) = BoolVal (l && r)
+logOp LogOpOr _ (BoolVal l) (BoolVal r) = BoolVal (l || r)
+logOp _ p _ _ = error $ "logical operation on non-boolean on line " ++ show p
 
 -- fixme new loc duplicates
 
@@ -23,12 +25,11 @@ execStmt (Empty _) = do
   en <- ask
   return en
 
-execStmt w@(While _ e s) = do
-   --en <- get
+execStmt w@(While ps@(Just p) e s) = do
    e' <- evalExpr e
    let b = case e' of
         (BoolVal b') -> b'
-        _ -> error $ "while condition non-boolean"
+        _ -> error $ "while condition non-boolean on line " ++ show p
    --(BoolVal b) <- evalExpr e
    -- local?
    if b
@@ -36,13 +37,13 @@ execStmt w@(While _ e s) = do
          execStmt s >>
          execStmt w
       else
-         execStmt (Empty undefined) --todo
+         execStmt (Empty ps) --todo
 
-execStmt (Cond _ e s) = do
+execStmt (Cond p e s) = do
   (BoolVal b) <- evalExpr e
   if b
     then execStmt s
-    else execStmt (Empty undefined) --todo
+    else execStmt (Empty p) --todo
 
 execStmt (CondElse _ e s1 s2) = do
   (BoolVal b) <- evalExpr e
@@ -51,15 +52,14 @@ execStmt (CondElse _ e s1 s2) = do
     else execStmt s2
 
 -- fixme local variables within blocks
-execStmt (BStmt _ (Block _ (x : xs))) = do
+execStmt (BStmt p (Block q (x : xs))) = do
 #ifdef DEBUG
   traceM("block env: " ++ show em ++ " " ++ show x)
 #endif
   en <- execStmt x
   if ((retVal en) == NoneVal) then
-    local (\_ -> en) (execStmt (BStmt undefined (Block undefined xs)))-- fixme
+    local (\_ -> en) (execStmt (BStmt p (Block q xs)))-- fixme
   else do
-    --traceM("faak:" ++ show en)
     return en
 
 execStmt (BStmt _ (Block _ [])) = do
@@ -114,29 +114,29 @@ execStmt (Print _ e) = do
 #endif
   return en
 
-execStmt (ConstFor _ (Ident s) e1 e2 stmt) = do
+execStmt (ConstFor (Just p) (Ident s) e1 e2 stmt) = do
   begin <- evalExpr e1
   final <- evalExpr e2
   let (start, end) = case (begin, final) of
         (IntVal n, IntVal m) -> (n, m)
-        _ -> error $ "invalid for init/end expression"
+        _ -> error $ "invalid for init/end expression on line " ++ show p
   mem <- get
   let newLoc = (Map.size mem)
   modify (Map.insert newLoc begin)
   mdf <- local (\e -> Env (Map.insert s newLoc (vEnv e)) (retVal e)) (execConstFor newLoc end stmt)
   return mdf
 
-execStmt (Incr _ i) = do
-  val <- evalExpr (EVar undefined i)
+execStmt (Incr s@(Just p) i) = do
+  val <- evalExpr (EVar s i)
   case val of
-    (IntVal n) -> execStmt (Ass undefined i (ELitInt undefined (n + 1)))
-    _ -> error $ "incremental on non int value"
+    (IntVal n) -> execStmt (Ass s i (ELitInt s (n + 1)))
+    _ -> error $ "incremental on non int value on line " ++ show p
 
-execStmt (Decr _ i) = do
-  val <- evalExpr (EVar undefined i)
+execStmt (Decr s@(Just p) i) = do
+  val <- evalExpr (EVar s i)
   case val of
-    (IntVal n) -> execStmt (Ass undefined i (ELitInt undefined (n - 1)))
-    _ -> error $ "decremental on non int value"
+    (IntVal n) -> execStmt (Ass s i (ELitInt s (n - 1)))
+    _ -> error $ "decremental on non int value on line" ++ show p
 
 execConstFor :: Loc -> Integer -> Stmt -> RT Env
 execConstFor loc end stmt = do
@@ -152,22 +152,22 @@ assignAll :: [Item] -> RT Env
 assignAll [] = do
   en <- ask
   return en
-assignAll ((Init _ s e) : xs) = do
-  en <- execStmt (Ass undefined s e)
+assignAll ((Init p s e) : xs) = do
+  en <- execStmt (Ass p s e)
   ret <- local (\_ -> en) (assignAll xs)
   return ret
 
-mulOp :: MulOp -> Value -> Value -> Value
-mulOp (Times _) (IntVal x) (IntVal y) = IntVal (x * y)
-mulOp (Div _) (IntVal x) (IntVal y) = IntVal (div x y)
-mulOp (Mod _) (IntVal x) (IntVal y) = IntVal (mod x y)
-mulOp _ _ _ = error $ "*,/,% operator on inconsistent types"
+mulOp :: MulOp -> Pos -> Value -> Value -> Value
+mulOp (Times _) _ (IntVal x) (IntVal y) = IntVal (x * y)
+mulOp (Div _) _ (IntVal x) (IntVal y) = IntVal (div x y)
+mulOp (Mod _) _ (IntVal x) (IntVal y) = IntVal (mod x y)
+mulOp _ p _ _ = error $ "*,/,% operator on inconsistent types on line " ++ show p
 
-addOp :: AddOp -> Value -> Value -> Value
-addOp (Plus _) (IntVal x) (IntVal y) = IntVal (x + y)
-addOp (Minus _) (IntVal x) (IntVal y) = IntVal (x - y)
-addOp (Plus _) (StringVal x) (StringVal y) = StringVal (x ++ y)
-addOp _ _ _ = error $ "-,+ operator on inconsistent types"
+addOp :: AddOp -> Pos -> Value -> Value -> Value
+addOp (Plus _) _ (IntVal x) (IntVal y) = IntVal (x + y)
+addOp (Minus _) _ (IntVal x) (IntVal y) = IntVal (x - y)
+addOp (Plus _) _ (StringVal x) (StringVal y) = StringVal (x ++ y)
+addOp _ p _ _ = error $ "-,+ operator on inconsistent types on line " ++ show p
 
 relOp :: RelOp -> Value -> Value -> Value
 relOp (LTH _) x y = BoolVal (x < y)
@@ -192,17 +192,17 @@ evalExpr (Not _ x) = do
   x' <- evalExpr x
   return not x'-}
 
-evalExpr (EMul _ l op r) = do
+evalExpr (EMul (Just p) l op r) = do
   let p' = mulOp op
   l' <- evalExpr l
   r' <- evalExpr r
-  return (p' l' r')
+  return (p' p l' r')
 
-evalExpr (EAdd _ l op r) = do
+evalExpr (EAdd (Just p) l op r) = do
   let p' = addOp op
   l' <- evalExpr l
   r' <- evalExpr r
-  return (p' l' r')
+  return (p' p l' r')
 
 evalExpr (ERel _ l op r) = do
   let p' = relOp op
@@ -210,7 +210,7 @@ evalExpr (ERel _ l op r) = do
   r' <- evalExpr r
   return (p' l' r')
 
-evalExpr (EVar p (Ident v)) = do
+evalExpr (EVar (Just p) (Ident v)) = do
   s <- ask
   let x = Map.lookup v (vEnv s)
   case x of
@@ -222,44 +222,50 @@ evalExpr (EVar p (Ident v)) = do
       val <- gets (Map.! y)
       return val
 
-evalExpr (EAnd _ l r) = do
+evalExpr (EAnd (Just p) l r) = do
   l' <- evalExpr l
   r' <- evalExpr r
-  return (logOp LogOpAnd l' r')
+  return (logOp LogOpAnd p l' r')
   --case (l', r') of
     --((BoolVal vl), (BoolVal vr)) -> return (BoolVal (vl && vr))
     --_ -> error $ "and operator on non-boolean"
 
-evalExpr (EOr _ l r) = do
+evalExpr (EOr (Just p) l r) = do
   l' <- evalExpr l
   r' <- evalExpr r
-  return (logOp LogOpOr l' r')
+  return (logOp LogOpOr p l' r')
   --case (l', r') of
     --((BoolVal vl), (BoolVal vr)) -> return (BoolVal (vl || vr))
     --_ -> error $ "and operator on non-boolean"
 
-evalExpr (EApp _ (Ident f) values) = do
+evalExpr (EApp (Just p) (Ident f) values) = do
   s <- ask
   mem <- get
   let x = Map.lookup f (vEnv s)
   case x of
-    Nothing -> error $ "not declared function"
+    Nothing -> error $ "function not declared on line " ++ show p
     Just y -> do
+      --traceM("mem: " ++ show mem)
+      --traceM("env: " ++ show s)
       fn <- gets(Map.! y)
       case fn of
         (Closure args b) -> do
-          let keys = map (\ (Ar _ (Ident st)) -> st) args
-          let size = Map.size mem
-          let locs = [size..(size + (length keys) - 1)]
-          vals <- mapM evalExpr values
-          let newMap = Map.fromList $ zip keys locs
-          let newState = Map.fromList $ zip locs vals
-          modify (Map.union newState)
-#ifdef DEBUG
-          traceM("args map " ++ show newMap)
-#endif
-          ig <- local (\e -> Env (Map.union newMap (vEnv e)) (retVal e)) $ execStmt (BStmt undefined b)
-          return (retVal ig)
+          let real = length args
+          let actual = length values
+          --traceM("real: " ++ show real ++ " actual: " ++ show actual)
+          if (actual /= real) then
+            error $ "number of arguments mismatch on line " ++ show p
+          else do
+            let keys = map (\ (Ar _ (Ident st)) -> st) args
+            let size = Map.size mem
+            let locs = [size..(size + (length keys) - 1)]
+            vals <- mapM evalExpr values
+            let newMap = Map.fromList $ zip keys locs
+            let newState = Map.fromList $ zip locs vals
+            modify (Map.union newState)
+            ig <- local (\e -> Env (Map.union newMap (vEnv e)) (retVal e))
+              $ execStmt (BStmt (hasPosition b) b)
+            return (retVal ig)
         _ -> error $ "function and variable names collide"
 
 collect :: [TopDef] -> RT Env
@@ -267,8 +273,8 @@ collect [] = do
   en <- ask
   return en
 collect (x : xs) = case x of
-  FnDefArgG _ s l b -> do
-    ret <- execStmt (FnDefArg undefined s l b)
+  FnDefArgG p s l b -> do
+    ret <- execStmt (FnDefArg p s l b)
     nxt <- local (\_ -> ret) (collect xs)
     return nxt
   (Glob _ l) -> do
@@ -287,6 +293,8 @@ interpret (Program _ l) = go l where
 #endif
     let main = Map.lookup "main" (vEnv mal)
     _ <- case main of
-          Nothing -> error $ "main function not defined"
-          _ -> local (\_ -> mal) (execStmt (SExp undefined (EApp undefined (Ident "main") [])))
+      Nothing -> error $ "main function not defined"
+      _ -> do
+        let start = Just (0, 0)
+        local (\_ -> mal) (execStmt (SExp start (EApp start (Ident "main") [])))
     return ()

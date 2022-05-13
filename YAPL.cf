@@ -1,20 +1,15 @@
 ------------------------ programs ----------------------------
-
-layout ":", "):" ;
+layout "):", ":" ;
 
 entrypoints Program ;
 
 Program.        Program ::= [TopDef] ;
-
-FnDefNoArgG.	TopDef ::= Ident ":" Block ; --todo remove
 
 FnDefArgG.      TopDef ::= Ident "(" [Arg] "):" Block ;
 
 Ar. 	        Arg ::= Ident;
 
 separator       Arg "," ;
-
-ExpDef.         TopDef ::= Expr ;
 
 Glob.           TopDef ::= [Item];
 
@@ -48,7 +43,7 @@ VRet.      Stmt ::= "return" ";" ;
 
 Cond.      Stmt ::= "if" "(" Expr "):" Stmt  ;
 
-CondElse.  Stmt ::= "if" "(" Expr "):" Stmt "else:" Stmt  ;
+CondElse.  Stmt ::= "if" "(" Expr "):" Stmt "else" ":" Stmt  ;
 
 While.     Stmt ::= "while" "(" Expr "):" Stmt ;
 

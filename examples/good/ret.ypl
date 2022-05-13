@@ -1,7 +1,7 @@
-main(): {
+main():
     a = 2 * 3;
     if (false || a == 6):
         out("worked");
     else:
         out("worked2");
-}
+        out("adfasdf");

@@ -30,17 +30,18 @@ except ``"`` unless preceded by ``\``.
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in YAPL are the following:
-  | ``false`` | ``for`` | ``if`` | ``out``
-  | ``return`` | ``to`` | ``true`` | ``while``
+  | ``else`` | ``false`` | ``for`` | ``if``
+  | ``out`` | ``return`` | ``to`` | ``true``
+  | ``while`` |  |  |
 
 The symbols used in YAPL are the following:
-  | : | ( | ): | ,
-  | { | } | ; | =
-  | ++ | -- | else: | )
-  | [ | ] | - | !
-  | && | || | + | *
-  | / | % | < | <=
-  | > | >= | == | !=
+  | ( | ): | , | {
+  | } | ; | = | ++
+  | -- | : | ) | [
+  | ] | - | ! | &&
+  | || | + | * | /
+  | % | < | <= | >
+  | >= | == | != |
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with /* and */.
@@ -52,9 +53,7 @@ and **eps** (empty rule) belong to the BNF notation.
 All other symbols are terminals.
 
   | //Program// | -> | //[TopDef]//
-  | //TopDef// | -> | //Ident// ``:`` //Block//
-  |  |  **|**  | //Ident// ``(`` //[Arg]// ``):`` //Block//
-  |  |  **|**  | //Expr//
+  | //TopDef// | -> | //Ident// ``(`` //[Arg]// ``):`` //Block//
   |  |  **|**  | //[Item]//
   | //Arg// | -> | //Ident//
   | //[Arg]// | -> | **eps**
@@ -73,7 +72,7 @@ All other symbols are terminals.
   |  |  **|**  | ``return`` //Expr// ``;``
   |  |  **|**  | ``return`` ``;``
   |  |  **|**  | ``if`` ``(`` //Expr// ``):`` //Stmt//
-  |  |  **|**  | ``if`` ``(`` //Expr// ``):`` //Stmt// ``else:`` //Stmt//
+  |  |  **|**  | ``if`` ``(`` //Expr// ``):`` //Stmt// ``else`` ``:`` //Stmt//
   |  |  **|**  | ``while`` ``(`` //Expr// ``):`` //Stmt//
   |  |  **|**  | ``for`` ``(`` //Ident// ``=`` //Expr// ``;`` ``to`` //Expr// ``):`` //Stmt//
   |  |  **|**  | //Expr// ``;``

@@ -146,9 +146,7 @@ instance Print (AbsYAPL.Program' a) where
 
 instance Print (AbsYAPL.TopDef' a) where
   prt i = \case
-    AbsYAPL.FnDefNoArgG _ id_ block -> prPrec i 0 (concatD [prt 0 id_, doc (showString ":"), prt 0 block])
     AbsYAPL.FnDefArgG _ id_ args block -> prPrec i 0 (concatD [prt 0 id_, doc (showString "("), prt 0 args, doc (showString "):"), prt 0 block])
-    AbsYAPL.ExpDef _ expr -> prPrec i 0 (concatD [prt 0 expr])
     AbsYAPL.Glob _ items -> prPrec i 0 (concatD [prt 0 items])
 
 instance Print (AbsYAPL.Arg' a) where
@@ -183,7 +181,7 @@ instance Print (AbsYAPL.Stmt' a) where
     AbsYAPL.Ret _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr, doc (showString ";")])
     AbsYAPL.VRet _ -> prPrec i 0 (concatD [doc (showString "return"), doc (showString ";")])
     AbsYAPL.Cond _ expr stmt -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt])
-    AbsYAPL.CondElse _ expr stmt1 stmt2 -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt1, doc (showString "else:"), prt 0 stmt2])
+    AbsYAPL.CondElse _ expr stmt1 stmt2 -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt1, doc (showString "else"), doc (showString ":"), prt 0 stmt2])
     AbsYAPL.While _ expr stmt -> prPrec i 0 (concatD [doc (showString "while"), doc (showString "("), prt 0 expr, doc (showString "):"), prt 0 stmt])
     AbsYAPL.ConstFor _ id_ expr1 expr2 stmt -> prPrec i 0 (concatD [doc (showString "for"), doc (showString "("), prt 0 id_, doc (showString "="), prt 0 expr1, doc (showString ";"), doc (showString "to"), prt 0 expr2, doc (showString "):"), prt 0 stmt])
     AbsYAPL.SExp _ expr -> prPrec i 0 (concatD [prt 0 expr, doc (showString ";")])
