@@ -12,7 +12,14 @@ data Value =
   | BoolVal Bool
   | StringVal String
   | Closure [Arg] Block Env
-  | NoneVal deriving (Show, Eq, Ord)
+  | NoneVal
+  | VoidVal deriving (Eq, Ord)
+
+instance Show Value where
+  show (IntVal v) = show v
+  show (BoolVal v) = show v
+  show (StringVal v) = v
+  show _ = "Invalid type to show"
 
 type Var = String
 type VEnv = Map.Map Var Value

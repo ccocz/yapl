@@ -1,0 +1,12 @@
+even(a): {
+    if (a % 2 == 0): {
+        out("even");
+        return;
+    }
+    out("odd");
+}
+
+main(): {
+    even(2);
+    even(3);
+}

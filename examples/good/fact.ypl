@@ -1,6 +1,9 @@
-main(): {
-    out(fact(7));
-    out(factr(7));
+# recursive
+factr(n): {
+    if (n < 2): {
+        return n;
+    }
+    return n * factr(n - 1);
 }
 
 # iterative
@@ -12,10 +15,7 @@ fact(n): {
     return r;
 }
 
-# recursive
-factr(n): {
-    if (n < 2): {
-        return n;
-    }
-    return n * factr(n - 1);
+main(): {
+    out(fact(7));
+    out(factr(7));
 }

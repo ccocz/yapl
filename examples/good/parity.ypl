@@ -1,8 +1,10 @@
-{
-    isOdd(n): {
-        return n % 2 == 1;
-    }
+isOdd(n): {
+    return n % 2 == 1;
+}
 
+main(): {
     ans1 = isOdd(13);
     ans2 = isOdd(14);
+    out(ans1);
+    out(ans2);
 }

@@ -4,7 +4,6 @@ is_prime(n): {
     ok = false;
   i = 3;
   while (i * i <= n): {
-    #out(i);
     if (n % i == 0): {
       ok = false;
     }

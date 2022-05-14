@@ -101,8 +101,9 @@ execStmt (FnDefArg _ (Ident s) l b) = do
   mem <- get
   -- todo: what if it exists
   let newLoc = (Map.size mem)
-  modify (Map.insert newLoc (Closure l b en))
-  return (Env (Map.insert s newLoc (vEnv en)) (retVal en))
+  let newEnv = Env (Map.insert s newLoc (vEnv en)) (retVal en)
+  modify (Map.insert newLoc (Closure l b newEnv))
+  return newEnv
   --return (Env (Map.insert s (Closure l b) (vEnv e)) (retVal e))
 
 execStmt (Ret _ e) = do
@@ -112,6 +113,13 @@ execStmt (Ret _ e) = do
   traceM("val: " ++ show val)
 #endif
   return (Env (vEnv en) val)
+
+execStmt (VRet _) = do
+  en <- ask
+#ifdef DEBUG
+  traceM("val: " ++ show val)
+#endif
+  return (Env (vEnv en) VoidVal)
 
 execStmt (Print _ e) = do
   en <- ask

@@ -9,9 +9,9 @@ import EnvYAPL
 import Control.Monad.State
 import Control.Monad.Reader
 import Control.Monad.Except
+import System.Environment (getArgs)
 
-import System.Environment ( getArgs )
-
+start :: Env
 start = Env {
   vEnv = Map.empty,
   retVal = NoneVal
@@ -19,16 +19,15 @@ start = Env {
 
 main :: IO ()
 main = do
-   file <- getArgs
-   case file of
-       [] -> error "No args provided!"
-       file:_ -> do
-           program <- readFile file
-           case pProgram (myLexer program) of
-               Ok p  -> do
-                 r <- runExceptT (runStateT (runReaderT (interpret p) start) Map.empty)
-                 case r of
-                   (Left e) -> putStrLn $ "Error: " ++ e
-                   --(Right r) -> putStrLn $ "last env: " ++ show r
-                   (Right r) -> putStrLn $ "finished program"
-               Bad e -> error e
+   args <- getArgs
+   case args of
+     [src] -> do
+       prog <- readFile src
+       case pProgram (myLexer prog) of
+         Ok p  -> do
+           result <- runExceptT (runStateT (runReaderT (interpret p) start) Map.empty)
+           case result of
+             (Left e) -> putStrLn $ "Error: " ++ e
+             _ -> return ()
+         Bad e -> error e
+     _ -> error $ "Need single source file argument"
