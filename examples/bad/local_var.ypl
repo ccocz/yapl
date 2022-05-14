@@ -1,0 +1,10 @@
+fun(): {
+    a=5;
+    out(a);
+}
+
+main(): {
+    local a=5;
+    fun();
+    out(a);
+}

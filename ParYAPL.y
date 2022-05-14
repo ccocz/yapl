@@ -51,14 +51,15 @@ import LexYAPL
   'false'  { PT _ (TS _ 26) }
   'for'    { PT _ (TS _ 27) }
   'if'     { PT _ (TS _ 28) }
-  'out'    { PT _ (TS _ 29) }
-  'return' { PT _ (TS _ 30) }
-  'to'     { PT _ (TS _ 31) }
-  'true'   { PT _ (TS _ 32) }
-  'while'  { PT _ (TS _ 33) }
-  '{'      { PT _ (TS _ 34) }
-  '||'     { PT _ (TS _ 35) }
-  '}'      { PT _ (TS _ 36) }
+  'local'  { PT _ (TS _ 29) }
+  'out'    { PT _ (TS _ 30) }
+  'return' { PT _ (TS _ 31) }
+  'to'     { PT _ (TS _ 32) }
+  'true'   { PT _ (TS _ 33) }
+  'while'  { PT _ (TS _ 34) }
+  '{'      { PT _ (TS _ 35) }
+  '||'     { PT _ (TS _ 36) }
+  '}'      { PT _ (TS _ 37) }
   L_Ident  { PT _ (TV _)    }
   L_integ  { PT _ (TI _)    }
   L_quoted { PT _ (TL _)    }
@@ -111,6 +112,7 @@ Stmt
   : ';' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Empty (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1))) }
   | Block { (fst $1, AbsYAPL.BStmt (fst $1) (snd $1)) }
   | Ident '=' Expr ';' { (fst $1, AbsYAPL.Ass (fst $1) (snd $1) (snd $3)) }
+  | 'local' Ident '=' Expr ';' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.LocAss (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4)) }
   | Ident '++' ';' { (fst $1, AbsYAPL.Incr (fst $1) (snd $1)) }
   | Ident '--' ';' { (fst $1, AbsYAPL.Decr (fst $1) (snd $1)) }
   | 'return' Expr ';' { (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1), AbsYAPL.Ret (uncurry AbsYAPL.BNFC'Position (tokenLineCol $1)) (snd $2)) }

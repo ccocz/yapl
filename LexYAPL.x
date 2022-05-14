@@ -166,13 +166,13 @@ resWords =
        (b ":" 15
           (b "--" 13 (b "-" 12 (b "," 11 N N) N) (b "/" 14 N N))
           (b "<" 17 (b ";" 16 N N) (b "<=" 18 N N))))
-    (b "if" 28
+    (b "local" 29
        (b "]" 24
           (b ">=" 22 (b ">" 21 (b "==" 20 N N) N) (b "[" 23 N N))
-          (b "false" 26 (b "else" 25 N N) (b "for" 27 N N)))
-       (b "while" 33
-          (b "to" 31 (b "return" 30 (b "out" 29 N N) N) (b "true" 32 N N))
-          (b "||" 35 (b "{" 34 N N) (b "}" 36 N N))))
+          (b "for" 27 (b "false" 26 (b "else" 25 N N) N) (b "if" 28 N N)))
+       (b "while" 34
+          (b "to" 32 (b "return" 31 (b "out" 30 N N) N) (b "true" 33 N N))
+          (b "||" 36 (b "{" 35 N N) (b "}" 37 N N))))
   where
   b s n = B bs (TS bs n)
     where

@@ -41,6 +41,7 @@ transStmt x = case x of
   AbsYAPL.Empty _ -> failure x
   AbsYAPL.BStmt _ block -> failure x
   AbsYAPL.Ass _ ident expr -> failure x
+  AbsYAPL.LocAss _ ident expr -> failure x
   AbsYAPL.Incr _ ident -> failure x
   AbsYAPL.Decr _ ident -> failure x
   AbsYAPL.Ret _ expr -> failure x

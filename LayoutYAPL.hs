@@ -29,10 +29,10 @@ data LayoutDelimiters
 layoutWords :: [(TokSymbol, LayoutDelimiters)]
 layoutWords =
   [ ( TokSymbol "):" 7
-    , LayoutDelimiters (TokSymbol ";" 16) (Just (TokSymbol "{" 34)) (Just (TokSymbol "}" 36))
+    , LayoutDelimiters (TokSymbol ";" 16) (Just (TokSymbol "{" 35)) (Just (TokSymbol "}" 37))
     )
   , ( TokSymbol ":" 15
-    , LayoutDelimiters (TokSymbol ";" 16) (Just (TokSymbol "{" 34)) (Just (TokSymbol "}" 36))
+    , LayoutDelimiters (TokSymbol ";" 16) (Just (TokSymbol "{" 35)) (Just (TokSymbol "}" 37))
     )
   ]
 

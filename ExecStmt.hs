@@ -88,12 +88,20 @@ execStmt (Ass _ (Ident s) e) = do
       modify (Map.insert y ex)
       return en
 
+execStmt (LocAss _ (Ident s) e) = do
+  en <- ask
+  ex <- evalExpr e
+  mem <- get
+  let newLoc = (Map.size mem)
+  modify (Map.insert newLoc ex)
+  return (Env (Map.insert s newLoc (vEnv en)) (retVal en))
+
 execStmt (FnDefArg _ (Ident s) l b) = do
   en <- ask
   mem <- get
   -- todo: what if it exists
   let newLoc = (Map.size mem)
-  modify (Map.insert newLoc (Closure l b))
+  modify (Map.insert newLoc (Closure l b en))
   return (Env (Map.insert s newLoc (vEnv en)) (retVal en))
   --return (Env (Map.insert s (Closure l b) (vEnv e)) (retVal e))
 
@@ -249,7 +257,7 @@ evalExpr (EApp (Just p) (Ident f) values) = do
       --traceM("env: " ++ show s)
       fn <- gets(Map.! y)
       case fn of
-        (Closure args b) -> do
+        (Closure args b en) -> do
           let real = length args
           let actual = length values
           --traceM("real: " ++ show real ++ " actual: " ++ show actual)
@@ -263,7 +271,7 @@ evalExpr (EApp (Just p) (Ident f) values) = do
             let newMap = Map.fromList $ zip keys locs
             let newState = Map.fromList $ zip locs vals
             modify (Map.union newState)
-            ig <- local (\e -> Env (Map.union newMap (vEnv e)) (retVal e))
+            ig <- local (\e -> Env (Map.union newMap (vEnv en)) (retVal e))
               $ execStmt (BStmt (hasPosition b) b)
             return (retVal ig)
         _ -> error $ "function and variable names collide"

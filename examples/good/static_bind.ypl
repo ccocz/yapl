@@ -1,0 +1,19 @@
+a=5;
+
+fun2(): {
+    a=6;
+}
+
+fun(): {
+    local a=7;
+    fun2();
+    out("fun:");
+    out(a);
+}
+
+
+main(): {
+    fun();
+    out("main:");
+    out(a);
+}

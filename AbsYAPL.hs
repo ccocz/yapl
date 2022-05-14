@@ -40,6 +40,7 @@ data Stmt' a
     = Empty a
     | BStmt a (Block' a)
     | Ass a Ident (Expr' a)
+    | LocAss a Ident (Expr' a)
     | Incr a Ident
     | Decr a Ident
     | Ret a (Expr' a)
@@ -131,6 +132,7 @@ instance HasPosition Stmt where
     Empty p -> p
     BStmt p _ -> p
     Ass p _ _ -> p
+    LocAss p _ _ -> p
     Incr p _ -> p
     Decr p _ -> p
     Ret p _ -> p

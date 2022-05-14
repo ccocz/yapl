@@ -31,8 +31,8 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in YAPL are the following:
   | ``else`` | ``false`` | ``for`` | ``if``
-  | ``out`` | ``return`` | ``to`` | ``true``
-  | ``while`` |  |  |
+  | ``local`` | ``out`` | ``return`` | ``to``
+  | ``true`` | ``while`` |  |
 
 The symbols used in YAPL are the following:
   | ( | ): | , | {
@@ -67,6 +67,7 @@ All other symbols are terminals.
   | //Stmt// | -> | ``;``
   |  |  **|**  | //Block//
   |  |  **|**  | //Ident// ``=`` //Expr// ``;``
+  |  |  **|**  | ``local`` //Ident// ``=`` //Expr// ``;``
   |  |  **|**  | //Ident// ``++`` ``;``
   |  |  **|**  | //Ident// ``--`` ``;``
   |  |  **|**  | ``return`` //Expr// ``;``

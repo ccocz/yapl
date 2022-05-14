@@ -11,7 +11,7 @@ data Value =
   IntVal Integer
   | BoolVal Bool
   | StringVal String
-  | Closure [Arg] Block
+  | Closure [Arg] Block Env
   | NoneVal deriving (Show, Eq, Ord)
 
 type Var = String
@@ -20,7 +20,7 @@ type VEnv = Map.Map Var Value
 data Env = Env {
   vEnv :: Map.Map Var Loc,
   retVal :: Value
-  } deriving Show
+  } deriving (Show, Eq, Ord)
 
 type Loc = Int
 type Mem = Map.Map Loc Value

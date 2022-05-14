@@ -1,23 +1,25 @@
-{
-	is_prime(n): {
-	  ok = true;
-	  if (n % 2 == 0):
-	    ok = false;
-	  i = 3;
-	  while (i * i <= n): {
-	    out(i);
-	    if (n % i == 0): {
-	      ok = false;
-	    }
-	    i = i + 2;
-	  }
-	  return ok;
+is_prime(n): {
+  ok = true;
+  if (n % 2 == 0):
+    ok = false;
+  i = 3;
+  while (i * i <= n): {
+    #out(i);
+    if (n % i == 0): {
+      ok = false;
+    }
+    i = i + 2;
+  }
+  return ok;
+}
+
+main(): {
+	for (i=0; to 100): {
+	   ans = is_prime(i);
+	   out(i);
+	   if (ans == true):
+	     out("prime");
+	   else:
+	     out("not prime");
 	}
-
-	ans = is_prime(100);
-
-	if (ans == true):
-	    out("prime");
-	else:
-	    out("not prime");
 }
