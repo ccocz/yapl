@@ -22,7 +22,7 @@ instance Show Value where
   show (BoolVal v) = show v
   show (StringVal v) = v
   show (VoidVal) = "none"
-  show (NoneVal) = "none"'
+  show (NoneVal) = "none"
   show _ = "Invalid type to show"
 
 type Var = String
