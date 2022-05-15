@@ -17,8 +17,6 @@ logOp LogOpAnd _ (BoolVal l) (BoolVal r) = BoolVal (l && r)
 logOp LogOpOr _ (BoolVal l) (BoolVal r) = BoolVal (l || r)
 logOp _ p _ _ = error $ "logical operation on non-boolean on line " ++ show p
 
--- fixme new loc duplicates
-
 execStmt :: Stmt -> RT Env
 
 execStmt (Empty _) = do
@@ -168,9 +166,18 @@ execConstFor loc end stmt = do
   en <- ask
   (IntVal now) <- gets(Map.! loc)
   if (now <= end) then do
-     _ <- execStmt stmt
-     modify (Map.insert loc (IntVal (now + 1)))
-     execConstFor loc end stmt
+    case (retVal en) of
+      BreakVal -> do
+        return (Env (vEnv en) NoneVal)
+      ContVal -> do
+        nxt <- local (\_ -> Env (vEnv en) NoneVal) (execStmt stmt)
+        modify (Map.insert loc (IntVal (now + 1)))
+        local (\_ -> nxt) (execConstFor loc end stmt)
+      NoneVal -> do
+        nxt <- execStmt stmt
+        modify (Map.insert loc (IntVal (now + 1)))
+        local (\_ -> nxt) (execConstFor loc end stmt)
+      _ -> return en
   else return en
 
 assignAll :: [Item] -> RT Env
