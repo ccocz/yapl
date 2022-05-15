@@ -16,7 +16,7 @@ Both valid and invalid example source codes can be found in `examples/good` and 
 
 ## Functionality
 
-- [x] Int, String and Bool types
+- [x] Int, String and Boolean types
 - [x] Literals, arithmetics, comparisons
 - [x] Variables and assignments
 - [x] Print function
@@ -24,11 +24,14 @@ Both valid and invalid example source codes can be found in `examples/good` and 
 - [x] Recursive functions
 - [x] For loop
 - [x] Static binding, local and global variables
-- [x] Error handling pointing position
+- [x] Error handling pointing positions
 - [x] Both void and non-void functions
 - [ ] Nested functions
 - [ ] Lists
 - [ ] Break, continue
 - [ ] Higher-order, anonymous functions, closures
+
+## Issues
+In the current version, indentation blocks are partially supported (needs fix on grammar layout), however curly bracket blocks are fully supported.  
 
 ## Conflicts
