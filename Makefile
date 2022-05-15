@@ -23,8 +23,9 @@ all : interpreter
 
 # Rules for building the parser.
 
+export PATH := $(PATH):/home/students/inf/PUBLIC/MRJP/bin
+
 ${PARSER_DIR}/AbsYAPL.hs ${PARSER_DIR}/LayoutYAPL.hs ${PARSER_DIR}/LexYAPL.x ${PARSER_DIR}/ParYAPL.y ${PARSER_DIR}/PrintYAPL.hs ${PARSER_DIR}/TestYAPL.hs : ${GRAMMAR}/YAPL.cf
-	export PATH="${PATH}:/home/students/inf/PUBLIC/MRJP/bin" ;
 	${BNFC} ${BNFC_OPTS} ${GRAMMAR}/YAPL.cf
 
 ${PARSER_DIR}/%.hs : ${PARSER_DIR}/%.y
