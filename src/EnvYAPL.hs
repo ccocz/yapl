@@ -6,7 +6,6 @@ import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
 
--- fixme: better to type
 data Value =
   IntVal Integer
   | BoolVal Bool

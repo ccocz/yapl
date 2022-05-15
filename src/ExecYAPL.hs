@@ -44,13 +44,13 @@ execStmt w@(While ps@(Just p) e s) = do
             local (\_ -> nxt) (execStmt w)
           _ -> return en
    else
-      execStmt (Empty ps) --todo
+      execStmt (Empty ps)
 
 execStmt (Cond p e s) = do
   (BoolVal b) <- evalExpr e
   if b
     then execStmt s
-    else execStmt (Empty p) --todo
+    else execStmt (Empty p)
 
 execStmt (CondElse _ e s1 s2) = do
   (BoolVal b) <- evalExpr e
@@ -58,31 +58,23 @@ execStmt (CondElse _ e s1 s2) = do
     then execStmt s1
     else execStmt s2
 
--- fixme local variables within blocks
 execStmt (BStmt p (Block q (x : xs))) = do
 #ifdef DEBUG
   traceM("block env: " ++ show em ++ " " ++ show x)
 #endif
   en <- execStmt x
   if ((retVal en) == NoneVal) then
-    local (\_ -> en) (execStmt (BStmt p (Block q xs)))-- fixme
-  --else if ((retVal en) == BreakVal) then do
-    --traceM("break enc")
-    --return (Env (vEnv en) BreakVal)
-    --local (\_ -> (Env (vEnv en) NoneVal)) (execStmt (BStmt p (Block q xs)))
+    local (\_ -> en) (execStmt (BStmt p (Block q xs)))
   else do
     return en
 
 execStmt (BStmt _ (Block _ [])) = do
   en <- ask
-  --traceM(show en)
   return en
 
 execStmt (SExp _ e) = do
   en <- ask
-  -- fixme what to do with this value? >>
   val <- evalExpr e
-  --traceM("valexp: " ++ show val)
   return en
 
 execStmt (Ass _ (Ident s) e) = do
@@ -110,12 +102,10 @@ execStmt (LocAss _ (Ident s) e) = do
 execStmt (FnDefArg _ (Ident s) l b) = do
   en <- ask
   mem <- get
-  -- todo: what if it exists
   let newLoc = (Map.size mem)
   let newEnv = Env (Map.insert s newLoc (vEnv en)) (retVal en)
   modify (Map.insert newLoc (Closure l b newEnv))
   return newEnv
-  --return (Env (Map.insert s (Closure l b) (vEnv e)) (retVal e))
 
 execStmt (Ret _ e) = do
   en <- ask
@@ -265,17 +255,11 @@ evalExpr (EAnd (Just p) l r) = do
   l' <- evalExpr l
   r' <- evalExpr r
   return (logOp LogOpAnd p l' r')
-  --case (l', r') of
-    --((BoolVal vl), (BoolVal vr)) -> return (BoolVal (vl && vr))
-    --_ -> error $ "and operator on non-boolean"
 
 evalExpr (EOr (Just p) l r) = do
   l' <- evalExpr l
   r' <- evalExpr r
   return (logOp LogOpOr p l' r')
-  --case (l', r') of
-    --((BoolVal vl), (BoolVal vr)) -> return (BoolVal (vl || vr))
-    --_ -> error $ "and operator on non-boolean"
 
 evalExpr (EApp (Just p) (Ident f) values) = do
   s <- ask
@@ -284,8 +268,6 @@ evalExpr (EApp (Just p) (Ident f) values) = do
   case x of
     Nothing -> error $ "function not declared on line " ++ show p
     Just y -> do
-      --traceM("mem: " ++ show mem)
-      --traceM("env: " ++ show s)
       fn <- gets(Map.! y)
       case fn of
         (Closure args b en) -> do
@@ -324,7 +306,6 @@ collect (x : xs) = case x of
 interpret :: Program -> RT ()
 interpret (Program _ l) = go l where
   go x = do
-    --traceM("collection started")
     mal <- collect x
 #ifdef DEBUG
     traceM("finished: " ++ show mal)
