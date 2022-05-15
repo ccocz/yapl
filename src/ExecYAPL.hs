@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 
-module ExecStmt(interpret) where
+module ExecYAPL(interpret) where
 
 import Control.Monad.State
 import Control.Monad.Reader
