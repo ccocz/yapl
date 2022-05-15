@@ -11,9 +11,6 @@ run
 $ ./interpreter <source>
 ```
 
-## Examples
-Both valid and invalid example source codes can be found in `examples/good` and `examples/bad` directories.
-
 ## Functionality
 
 - [x] Int, String and Boolean types
@@ -30,6 +27,9 @@ Both valid and invalid example source codes can be found in `examples/good` and 
 - [ ] Lists
 - [ ] Break, continue
 - [ ] Higher-order, anonymous functions, closures
+
+## Examples
+Both valid and invalid example source codes can be found in `examples/good` and `examples/bad` directories.
 
 ## Issues
 In the current version, indentation blocks are partially supported (needs fix on grammar layout), however curly bracket blocks are fully supported.  
