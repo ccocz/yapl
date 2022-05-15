@@ -23,9 +23,9 @@ $ ./interpreter <source>
 - [x] Static binding, local and global variables
 - [x] Error handling pointing positions
 - [x] Both void and non-void functions
-- [ ] Nested functions
+- [x] Nested functions
 - [ ] Lists
-- [ ] Break, continue
+- [x] Break, continue
 - [ ] Higher-order, anonymous functions, closures
 
 ## Examples

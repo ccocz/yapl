@@ -27,17 +27,24 @@ execStmt (Empty _) = do
 
 execStmt w@(While ps@(Just p) e s) = do
    e' <- evalExpr e
+   en <- ask
    let b = case e' of
         (BoolVal b') -> b'
         _ -> error $ "while condition non-boolean on line " ++ show p
-   --(BoolVal b) <- evalExpr e
-   -- local?
    if b
       then
-         execStmt s >>
-         execStmt w
-      else
-         execStmt (Empty ps) --todo
+        case (retVal en) of
+          BreakVal -> do
+            return (Env (vEnv en) NoneVal)
+          ContVal -> do
+            nxt <- local (\_ -> Env (vEnv en) NoneVal) (execStmt s)
+            local (\_ -> nxt) (execStmt w)
+          NoneVal -> do
+            nxt <- execStmt s
+            local (\_ -> nxt) (execStmt w)
+          _ -> return en
+   else
+      execStmt (Empty ps) --todo
 
 execStmt (Cond p e s) = do
   (BoolVal b) <- evalExpr e
@@ -59,6 +66,10 @@ execStmt (BStmt p (Block q (x : xs))) = do
   en <- execStmt x
   if ((retVal en) == NoneVal) then
     local (\_ -> en) (execStmt (BStmt p (Block q xs)))-- fixme
+  --else if ((retVal en) == BreakVal) then do
+    --traceM("break enc")
+    --return (Env (vEnv en) BreakVal)
+    --local (\_ -> (Env (vEnv en) NoneVal)) (execStmt (BStmt p (Block q xs)))
   else do
     return en
 
@@ -120,6 +131,14 @@ execStmt (VRet _) = do
   traceM("val: " ++ show val)
 #endif
   return (Env (vEnv en) VoidVal)
+
+execStmt (Break _) = do
+  en <- ask
+  return (Env (vEnv en) BreakVal)
+
+execStmt (Continue _) = do
+  en <- ask
+  return (Env (vEnv en) ContVal)
 
 execStmt (Print _ e) = do
   en <- ask

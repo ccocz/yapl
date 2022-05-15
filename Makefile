@@ -37,7 +37,7 @@ PARSER = ${PARSER_DIR}/AbsYAPL.hs ${PARSER_DIR}/LayoutYAPL.hs ${PARSER_DIR}/LexY
 IMP = ${SRC}/EnvYAPL.hs ${SRC}/ExecYAPL.hs
 
 TestYAPL : ${PARSER}
-	${GHC} ${GHC_OPTS} $@
+	${GHC} ${GHC_OPTS} ${PARSER} $@
 
 interpreter : ${PARSER} ${IMP}
 	${GHC} ${GHC_OPTS} ${SRC}/interpreter.hs -o $@

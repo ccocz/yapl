@@ -43,6 +43,10 @@ Ret.       Stmt ::= "return" Expr ";" ;
 
 VRet.      Stmt ::= "return" ";" ;
 
+Break.     Stmt ::= "break" ";" ;
+
+Continue.  Stmt ::= "continue" ";" ;
+
 Cond.      Stmt ::= "if" "(" Expr "):" Stmt  ;
 
 CondElse.  Stmt ::= "if" "(" Expr "):" Stmt "else" ":" Stmt  ;
@@ -53,7 +57,7 @@ ConstFor.  Stmt ::= "for" "(" Ident "=" Expr ";" "to" Expr "):" Stmt;
 
 SExp.      Stmt ::= Expr  ";" ;
 
-FnDefArg.  Stmt ::= Ident "(" [Arg] "):" Block ;
+FnDefArg.  Stmt ::= "lam" Ident "(" [Arg] "):" Block ;
 
 Print.     Stmt ::= "out" "(" Expr ")" ";" ;
 

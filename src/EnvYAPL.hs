@@ -13,12 +13,16 @@ data Value =
   | StringVal String
   | Closure [Arg] Block Env
   | NoneVal
-  | VoidVal deriving (Eq, Ord)
+  | VoidVal
+  | BreakVal
+  | ContVal deriving (Eq, Ord)
 
 instance Show Value where
   show (IntVal v) = show v
   show (BoolVal v) = show v
   show (StringVal v) = v
+  show (VoidVal) = "none"
+  show (NoneVal) = "none"'
   show _ = "Invalid type to show"
 
 type Var = String

@@ -1,0 +1,11 @@
+main(): {
+    y=10;
+    lam funB(): {
+        out(y);
+    }
+    lam funC(): {
+        local y=15;
+        funB();
+    }
+    funC();
+}
