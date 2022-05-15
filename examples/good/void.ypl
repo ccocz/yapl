@@ -1,12 +1,13 @@
 even(a): {
-    if (a % 2 == 0): {
-        out("even");
+    if (!(a % 2 == 0)): {
+        out("odd");
         return;
     }
-    out("odd");
+    out("even");
 }
 
 main(): {
+    out(-(10+10));
     even(2);
     even(3);
 }

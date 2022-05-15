@@ -200,13 +200,17 @@ evalExpr (ELitFalse _) = return $ BoolVal False
 evalExpr (EString _ str) = return $ StringVal str
 -- evalExpr (EList _ x) = return x
 
-{-evalExpr (Neg _ x) = do
+evalExpr (Neg (Just p) x) = do
   x' <- evalExpr x
-  return -1 * x'
+  case x' of
+    (IntVal val) -> return $ IntVal $ -val
+    _ -> error $ "Minus sign on non-int type on line " ++ show p
 
-evalExpr (Not _ x) = do
+evalExpr (Not (Just p) x) = do
   x' <- evalExpr x
-  return not x'-}
+  case x' of
+    (BoolVal b) -> return $ BoolVal $ not b
+    _ -> error $ "Logical not operator applied to non-boolean on line " ++ show p
 
 evalExpr (EMul (Just p) l op r) = do
   let p' = mulOp op

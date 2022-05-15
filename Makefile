@@ -24,7 +24,7 @@ all : interpreter
 # Rules for building the parser.
 
 ${PARSER_DIR}/AbsYAPL.hs ${PARSER_DIR}/LayoutYAPL.hs ${PARSER_DIR}/LexYAPL.x ${PARSER_DIR}/ParYAPL.y ${PARSER_DIR}/PrintYAPL.hs ${PARSER_DIR}/TestYAPL.hs : ${GRAMMAR}/YAPL.cf
-	export PATH="${PATH}:/home/students/inf/PUBLIC/MRJP/bin"
+	export PATH="${PATH}:/home/students/inf/PUBLIC/MRJP/bin" ;
 	${BNFC} ${BNFC_OPTS} ${GRAMMAR}/YAPL.cf
 
 ${PARSER_DIR}/%.hs : ${PARSER_DIR}/%.y
@@ -33,12 +33,13 @@ ${PARSER_DIR}/%.hs : ${PARSER_DIR}/%.y
 ${PARSER_DIR}/%.hs : ${PARSER_DIR}/%.x
 	${ALEX} ${ALEX_OPTS} $<
 
-TARGETS = ${PARSER_DIR}/AbsYAPL.hs ${PARSER_DIR}/LayoutYAPL.hs ${PARSER_DIR}/LexYAPL.hs ${PARSER_DIR}/ParYAPL.hs ${PARSER_DIR}/PrintYAPL.hs ${PARSER_DIR}/TestYAPL.hs
+PARSER = ${PARSER_DIR}/AbsYAPL.hs ${PARSER_DIR}/LayoutYAPL.hs ${PARSER_DIR}/LexYAPL.hs ${PARSER_DIR}/ParYAPL.hs ${PARSER_DIR}/PrintYAPL.hs ${PARSER_DIR}/TestYAPL.hs
+IMP = ${SRC}/EnvYAPL.hs ${SRC}/ExecYAPL.hs
 
-TestYAPL : ${TARGETS}
+TestYAPL : ${PARSER}
 	${GHC} ${GHC_OPTS} $@
 
-interpreter : ${TARGETS}
+interpreter : ${PARSER} ${IMP}
 	${GHC} ${GHC_OPTS} ${SRC}/interpreter.hs -o $@
 
 # Rules for cleaning generated files.
