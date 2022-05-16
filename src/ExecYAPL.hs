@@ -77,8 +77,8 @@ execStmt (SExp _ e) = do
 
 execStmt (Ass _ (Ident s) e) = do
   en <- ask
-  mem <- get
   ex <- evalExpr e
+  mem <- get
   let x = Map.lookup s (vEnv en)
   case x of
     Nothing -> do

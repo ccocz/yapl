@@ -1,0 +1,38 @@
+funA(): {
+    out("hello funA");
+}
+
+funC(): {
+    out("hello funC");
+    return "worked C";
+}
+
+funB(fun): {
+    fun();
+    return funC;
+}
+
+funD(run): {
+    run();
+}
+
+close(): {
+    var = "test";
+    lam inner(): {
+        out(var);
+    }
+    return inner;
+}
+
+main(): {
+    ret = funB(funA);
+    out(ret());
+    cl = close();
+    cl();
+
+    lam print(): {
+        out("print");
+    }
+
+    funD(print);
+}

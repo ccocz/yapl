@@ -71,7 +71,7 @@ internal     Bool.      Type ::= "bool" ;
 
 internal     Void.      Type ::= "void" ;
 
-internal     FuncType.  Type ::= "fun" ;
+internal     FuncType.  Type ::= "lam" ;
 
 ----------------------- Expressions --------------------------
 

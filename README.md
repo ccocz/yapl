@@ -26,12 +26,11 @@ $ ./interpreter <source>
 - [x] Nested functions
 - [ ] Lists
 - [x] Break, continue
-- [ ] Higher-order, anonymous functions, closures
+- [x] Higher-order, anonymous functions, closures
 
 ## Examples
 Both valid and invalid example source codes can be found in `examples/good` and `examples/bad` directories.
 
 ## Issues
-In the current version, indentation blocks are partially supported (needs fix on grammar layout), however curly bracket blocks are fully supported.  
-
-## Conflicts
+In the current version, indentation blocks are partially supported (needs fix on grammar layout), however curly bracket blocks are fully supported.
+This plan was documented in the initial specification. 
