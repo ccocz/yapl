@@ -8,7 +8,7 @@ $ make
 
 run 
 ```bash
-$ ./interpreter <source>
+$ ./yapl <source_code>
 ```
 
 ## Functionality

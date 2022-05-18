@@ -19,7 +19,7 @@ GRAMMAR	   = grammar
 
 # Default goal.
 
-all : interpreter
+all : yapl
 
 # Rules for building the parser.
 
@@ -40,12 +40,12 @@ IMP = ${SRC}/EnvYAPL.hs ${SRC}/ExecYAPL.hs
 TestYAPL : ${PARSER}
 	${GHC} ${GHC_OPTS} ${PARSER} $@
 
-interpreter : ${PARSER} ${IMP}
+yapl : ${PARSER} ${IMP}
 	${GHC} ${GHC_OPTS} ${SRC}/interpreter.hs -o $@
 
 # Rules for cleaning generated files.
 
 clean:
-	-rm -rf ${PARSER_DIR} ${BUILD} interpreter
+	-rm -rf ${PARSER_DIR} ${BUILD} yapl
 
 # EOF
