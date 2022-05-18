@@ -1,4 +1,4 @@
-# YAPL - yet another programming language
+# YAPL - Yapl Ain't Programming Language
 
 ## How to run
 After 
