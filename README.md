@@ -33,4 +33,3 @@ Both valid and invalid example source codes can be found in `examples/good` and 
 
 ## Issues
 In the current version, indentation blocks are partially supported (needs fix on grammar layout), however curly bracket blocks are fully supported.
-This plan was documented in the initial specification. 
